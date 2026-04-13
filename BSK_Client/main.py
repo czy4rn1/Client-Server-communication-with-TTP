@@ -8,11 +8,11 @@ from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import padding as aes_padding
 from cryptography import x509
 
-server_host = "127.0.0.1"
-server_port = 8887
+server_host = os.getenv('BSK_SERVER_IP', '127.0.0.1')
+server_port = int(os.getenv('BSK_SERVER_PORT', 8887))
 
-ttp_host = "127.0.0.1"
-ttp_port = 8888
+ttp_host = os.getenv('BSK_TTP_IP', '127.0.0.1')
+ttp_port = int(os.getenv('BSK_TTP_PORT', 8888))
 
 logged_in_ttp = False
 signed_in = False
