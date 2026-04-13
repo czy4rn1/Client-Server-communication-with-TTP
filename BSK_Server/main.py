@@ -35,7 +35,6 @@ class Server:
 
     def start(self):
         global ttp_socket
-        self.generate_id()
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.bind((self.host, self.port))
             s.listen()
