@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+    bsk_server_service:
+        build: .
+        container_name: server_container
+        ports:
+            - "8887:8887"
+        networks:
+            - bsk  
+networks:
+    bsk:
+        external: true
