@@ -1,4 +1,5 @@
 import os
+import logging
 import socket
 from guizero import App, Text, TextBox, PushButton
 from screeninfo import get_monitors
@@ -7,6 +8,10 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import padding as aes_padding
 from cryptography import x509
+
+logger = logging.getLogger(__name__)
+formatter = logging.Formatter("%(asctime)s;%(levelname)s;%(message)s", "[%Y-%m-%d %H:%M:%S]")
+logger.setLevel(logging.INFO)
 
 server_host = os.getenv('BSK_SERVER_IP', '127.0.0.1')
 server_port = int(os.getenv('BSK_SERVER_PORT', 8887))
@@ -18,6 +23,7 @@ logged_in_ttp = False
 signed_in = False
 server_socket = None
 
+
 def receive_data(conn, n):
     data = b''
     while len(data) < n:
@@ -26,6 +32,18 @@ def receive_data(conn, n):
             return None
         data += packet
     return data
+
+
+class GuizeroHandler(logging.Handler):
+    def __init__(self, text_widget):
+        super().__init__()
+        self.text_widget = text_widget
+
+    def emit(self, record):
+        log_entry = self.format(record)
+        self.text_widget.enable()
+        self.text_widget.append(log_entry)
+        self.text_widget.disable()
 
 
 class Client:
@@ -69,6 +87,7 @@ class Client:
         ttp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         ttp_socket.connect((ttp_host, ttp_port))
         ttp_socket.sendall(b'client_login')
+        logger.info('   Logged in to TTP')
         ttp_key_length = receive_data(ttp_socket, 4)
         ttp_key_length = int.from_bytes(ttp_key_length, byteorder='big')
         ttp_key = b''
@@ -78,29 +97,33 @@ class Client:
             ttp_key += data
 
         ttp_public_key = serialization.load_pem_public_key(ttp_key)
+        logger.info('   Received TTP Public Key')
         self.encryptedID = ttp_public_key.encrypt(self.clientID,
                                                   padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()),
                                                                algorithm=hashes.SHA256(),
                                                                label=None))
+        logger.info('   Encrypted my ID with TTP Public Key')
         ttp_socket.sendall(b'X509_REQUEST')
         encID_len = len(self.encryptedID)
         ttp_socket.sendall(encID_len.to_bytes(4, byteorder='big'))
         ttp_socket.sendall(self.encryptedID)
+        logger.info('   Sent my encrypted ID to TTP')
 
         public_pem = self.public_key.public_bytes(encoding=serialization.Encoding.PEM,
                                                   format=serialization.PublicFormat.SubjectPublicKeyInfo)
         ttp_socket.sendall(len(public_pem).to_bytes(4, byteorder='big'))
         ttp_socket.sendall(public_pem)
+        logger.info('   Sent my Public Key to TTP')
 
         raw_cert_len = receive_data(ttp_socket, 4)
         if raw_cert_len:
             cert_len = int.from_bytes(raw_cert_len, byteorder='big')
             cert_pem = receive_data(ttp_socket, cert_len)
             self.x509cert = x509.load_pem_x509_certificate(cert_pem)
+            logger.info('   Obtained x509 certificate')
         ttp_socket.close()
         ttp_socket = None
         logged_in_ttp = True
-
 
 
 def gui(client: Client):
@@ -109,7 +132,6 @@ def gui(client: Client):
 
     def unhoverSend():
         button.bg = "#c7c7c7"
-
 
     def submit():
         global logged_in_ttp
@@ -122,11 +144,15 @@ def gui(client: Client):
                 client.encrypt_id_and_obtain_x509cert()
                 logged_in_ttp = True
             server_socket.sendall(b'AUTH_REQUEST')
+            logger.info('   Sent authorization request')
             response = receive_data(server_socket, 7)
             if response == b'AUTH_OK':
+                logger.info('   Server has been correctly authenticated')
                 response = receive_data(server_socket, 9)
                 if response == b'USER_AUTH':
+                    logger.info('   User has received request from TTP for User Authentication')
                     server_socket.sendall(b'USER_AUTH_REQUEST')
+                    logger.info('   User has sent a request for User Authentication')
 
                     encID_len = len(client.encryptedID)
                     server_socket.sendall(encID_len.to_bytes(4, byteorder='big'))
@@ -138,12 +164,14 @@ def gui(client: Client):
 
                     final_response = receive_data(server_socket, 12)
                     if final_response == b'USER_AUTH_OK':
+                        logger.info('   User has been correctly authenticated')
                         ses_key_len = int.from_bytes(receive_data(server_socket, 4), byteorder='big')
                         enc_ses_key = receive_data(server_socket, ses_key_len)
                         client.session_key = client.private_key.decrypt(enc_ses_key,
                                                                         padding.OAEP(mgf=padding.MGF1(hashes.SHA256()),
                                                                                      algorithm=hashes.SHA256(),
                                                                                      label=None))
+                        logger.info('   Obtained session key')
 
             intro_text.clear()
             intro_text.append("\nSend data to the server\n")
@@ -153,11 +181,13 @@ def gui(client: Client):
             signed_in = True
         else:
             submitted_data = box.value.encode('utf-8')
+            text_data = box.value
             box.clear()
             if submitted_data != b'':
                 server_socket.sendall(client.encrypted_msg(submitted_data))
+                logger.info('   Sent message to the server: ' + text_data)
                 received = client.decrypt_msg(receive_data(server_socket, 48))
-                print(received)
+                logger.info('   Message from the server: ' + received)
                 intro_text.clear()
                 intro_text.append("\nLog in to the service\n")
                 box.hide()
@@ -167,12 +197,11 @@ def gui(client: Client):
                 msgSent = Text(app, text="Message has been sent", color="#38F527")
                 msgSent.after(5000, msgSent.destroy)
 
-
     monitors = get_monitors()
     m = monitors[0]
     app = App(title="Client", bg="#3B3B3B")
-    app.height = round(m.height * 0.3)
-    app.width = round(m.width * 0.2)
+    app.height = round(m.height * 0.4)
+    app.width = round(m.width * 0.4)
 
     intro_text = Text(app, text="\nLog in to the service\n", color="white")
 
@@ -191,6 +220,19 @@ def gui(client: Client):
     button.when_mouse_enters = hoverSend
     button.when_mouse_leaves = unhoverSend
     button.when_clicked = submit
+
+    console_logs = TextBox(app, multiline=True, scrollbar=True, width="fill", height="fill")
+    console_logs.bg = "black"
+    console_logs.text_color = "white"
+    console_logs.font = "Arial"
+    console_logs.disable()
+
+    gh = GuizeroHandler(console_logs)
+    gh.setLevel(logging.INFO)
+    gh.setFormatter(formatter)
+    logger.addHandler(gh)
+    logger.info('   App started')
+
     app.display()
 
 
