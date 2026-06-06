@@ -1,10 +1,19 @@
 import os
 import socket
+import logging
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography import x509
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding as aes_padding
+
+logger = logging.getLogger(__name__)
+formatter = logging.Formatter("%(asctime)s;%(levelname)s;%(message)s", "[%Y-%m-%d %H:%M:%S]")
+logger.setLevel(logging.INFO)
+fh = logging.FileHandler('server_log.log', encoding='utf-8')
+fh.setLevel(logging.INFO)
+fh.setFormatter(formatter)
+logger.addHandler(fh)
 
 ttp_host = "bsk_ttp_service"
 ttp_port = 8887
@@ -77,11 +86,13 @@ class Server:
     def handle_client(self, data, conn):
         global ttp_socket
         if data == b'AUTH_REQUEST':
+            logger.info('   Received authentication request')
             if ttp_socket is None:
                 ttp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 ttp_socket.connect((ttp_host, ttp_port))
 
             ttp_socket.sendall(data)
+            logger.info('   Sent request forward to TTP')
 
             encID_len = len(self.encryptedID)
             ttp_socket.sendall(encID_len.to_bytes(4, byteorder='big'))
@@ -92,12 +103,15 @@ class Server:
             ttp_socket.sendall(cert_pem)
             response = receive_data(ttp_socket, 7)
             if response == b'AUTH_OK':
+                logger.info('   Server has been correctly authenticated')
                 conn.sendall(response)
                 response = receive_data(ttp_socket, 9)
                 if response == b'USER_AUTH':
+                    logger.info('   Sent information about User Authentication to User')
                     conn.sendall(response)
                     response = receive_data(conn, 17)
                     if response == b'USER_AUTH_REQUEST':
+                        logger.info('   Received authentication request from the User')
                         ttp_socket.sendall(response)
                         user_raw_encID_len = receive_data(conn, 4)
                         if user_raw_encID_len:
@@ -105,20 +119,24 @@ class Server:
                             user_encID = receive_data(conn, user_encID_len)
                             ttp_socket.sendall(user_encID_len.to_bytes(4, byteorder='big'))
                             ttp_socket.sendall(user_encID)
+                            logger.info('   Sent Users encrypted ID forward to TTP')
                         user_raw_cert_len = receive_data(conn, 4)
                         if user_raw_cert_len:
                             user_cert_len = int.from_bytes(user_raw_cert_len, byteorder='big')
                             user_cert_pem = receive_data(conn, user_cert_len)
                             ttp_socket.sendall(user_cert_len.to_bytes(4, byteorder='big'))
                             ttp_socket.sendall(user_cert_pem)
+                            logger.info('   Sent Users x509 certificate forward to TTP')
                         final_response = receive_data(ttp_socket, 12)
                         if final_response == b'USER_AUTH_OK':
+                            logger.info('   User has been correctly authenticated')
                             ses_key_len = int.from_bytes(receive_data(ttp_socket, 4), byteorder='big')
                             enc_ses_key = receive_data(ttp_socket, ses_key_len)
                             self.session_key = self.private_key.decrypt(enc_ses_key,
                                                                         padding.OAEP(mgf=padding.MGF1(hashes.SHA256()),
                                                                                      algorithm=hashes.SHA256(),
                                                                                      label=None))
+                            logger.info('   Obtained session key')
                             user_raw_ses_key_len = receive_data(ttp_socket, 4)
                             user_ses_key_len = int.from_bytes(user_raw_ses_key_len, byteorder='big')
                             user_enc_ses_key = receive_data(ttp_socket, user_ses_key_len)
@@ -129,8 +147,10 @@ class Server:
                         ttp_socket = None
         elif data != b'':
             received_text = self.decrypt_msg(data)
+            logger.info('   Decrypted message: ' + received_text)
             print(received_text)
             conn.sendall(self.encrypted_msg('Server has received your message'.encode('utf-8')))
+            logger.info('   Sent message to the user: Server has received your message')
 
 
 
@@ -144,6 +164,7 @@ class Server:
         ttp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         ttp_socket.connect((ttp_host, ttp_port))
         ttp_socket.sendall(b'server_login')
+        logger.info('   Logging in to TTP')
         ttp_key_length = receive_data(ttp_socket, 4)
         ttp_key_length = int.from_bytes(ttp_key_length, byteorder='big')
         ttp_key = b''
@@ -153,25 +174,31 @@ class Server:
             ttp_key += data
 
         ttp_public_key = serialization.load_pem_public_key(ttp_key)
+        logger.info('   Received TTP Public Key')
         self.encryptedID = ttp_public_key.encrypt(self.serverID,
                                                   padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()),
                                                                algorithm=hashes.SHA256(),
                                                                label=None))
+        logger.info('   Encrypted my generated ID with TTP Public Key')
         ttp_socket.sendall(b'X509_REQUEST')
+        logger.info('   Sent request for a x509 certificate')
         encID_len = len(self.encryptedID)
         ttp_socket.sendall(encID_len.to_bytes(4, byteorder='big'))
         ttp_socket.sendall(self.encryptedID)
+        logger.info('   Sent my encrypted ID')
 
         public_pem = self.public_key.public_bytes(encoding=serialization.Encoding.PEM,
                                                   format=serialization.PublicFormat.SubjectPublicKeyInfo)
         ttp_socket.sendall(len(public_pem).to_bytes(4, byteorder='big'))
         ttp_socket.sendall(public_pem)
+        logger.info('   Sent my Public Key')
 
         raw_cert_len = receive_data(ttp_socket, 4)
         if raw_cert_len:
             cert_len = int.from_bytes(raw_cert_len, byteorder='big')
             cert_pem = receive_data(ttp_socket, cert_len)
             self.x509cert = x509.load_pem_x509_certificate(cert_pem)
+            logger.info('   Obtained x509 certificate')
         ttp_socket.close()
         ttp_socket = None
 

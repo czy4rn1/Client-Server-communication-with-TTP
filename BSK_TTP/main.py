@@ -1,10 +1,19 @@
 import datetime
 import secrets
+import logging
 from cryptography import x509
 from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 import socket
+
+logger = logging.getLogger(__name__)
+formatter = logging.Formatter("%(asctime)s;%(levelname)s;%(message)s", "[%Y-%m-%d %H:%M:%S]")
+logger.setLevel(logging.INFO)
+fh = logging.FileHandler('ttp_log.log', encoding='utf-8')
+fh.setLevel(logging.INFO)
+fh.setFormatter(formatter)
+logger.addHandler(fh)
 
 ttp_socket = None
 host = "0.0.0.0"
@@ -39,39 +48,52 @@ class TTP:
                     if not data:
                         break
                     if data == b'client_login' or data == b'server_login':
+                        if data == b'client_login':
+                            logger.info('   User has logged in to TTP')
+                        elif data == b'server_login':
+                            logger.info('   Server has logged in to TTP')
                         public_pem = self.public_key.public_bytes(
                             encoding=serialization.Encoding.PEM,
                             format=serialization.PublicFormat.SubjectPublicKeyInfo)
                         pub_len = len(public_pem)
                         conn.sendall(pub_len.to_bytes(4, byteorder='big'))
                         conn.sendall(public_pem)
+                        logger.info('   Sent my Public Key')
                     elif data.startswith(b'AUTH_REQUEST'):
+                        logger.info('   Received authentication request. Authenticating the server')
                         session_key = secrets.token_bytes(32)
                         raw_encID_len = receive_data(conn, 4)
                         if raw_encID_len:
                             encID_len = int.from_bytes(raw_encID_len, byteorder='big')
                             encID = receive_data(conn, encID_len)
+                            logger.info('   Received Servers encrypted ID')
                         raw_cert_len = receive_data(conn, 4)
                         if raw_cert_len:
                             cert_len = int.from_bytes(raw_cert_len, byteorder='big')
                             cert_pem = receive_data(conn, cert_len)
                             x509cert = x509.load_pem_x509_certificate(cert_pem)
+                            logger.info('   Received Servers x509 certificate')
                             try:
                                 self.public_key.verify(x509cert.signature, x509cert.tbs_certificate_bytes,
                                                        padding.PKCS1v15(), x509cert.signature_hash_algorithm)
                                 conn.sendall(b'AUTH_OK')
+                                logger.info('   Server has been correctly authenticated')
                                 conn.sendall(b'USER_AUTH')
+                                logger.info('   Authenticating the User')
                                 response = receive_data(conn, 17)
                                 if response == b'USER_AUTH_REQUEST':
+                                    logger.info('   Received User authentication request')
                                     user_raw_encID_len = receive_data(conn, 4)
                                     if user_raw_encID_len:
                                         user_encID_len = int.from_bytes(user_raw_encID_len, byteorder='big')
                                         user_encID = receive_data(conn, user_encID_len)
+                                        logger.info('   Received Users encrypted ID')
                                     user_raw_cert_len = receive_data(conn, 4)
                                     if user_raw_cert_len:
                                         user_cert_len = int.from_bytes(user_raw_cert_len, byteorder='big')
                                         user_cert_pem = receive_data(conn, user_cert_len)
                                         user_x509cert = x509.load_pem_x509_certificate(user_cert_pem)
+                                        logger.info('   Received Users x509 certificate')
                                         try:
                                             self.public_key.verify(user_x509cert.signature,
                                                                    user_x509cert.tbs_certificate_bytes,
@@ -88,9 +110,11 @@ class TTP:
                                                                      algorithm=hashes.SHA256(),
                                                                      label=None))
                                             conn.sendall(b'USER_AUTH_OK')
+                                            logger.info('   User has been correctly authenticated')
                                             conn.sendall(len(server_enc_ses_key).to_bytes(4, byteorder='big'))
                                             conn.sendall(server_enc_ses_key)
                                             conn.sendall(len(user_enc_ses_key).to_bytes(4, byteorder='big'))
+                                            logger.info('   Sent encrypted session key to Server and User')
                                             conn.sendall(user_enc_ses_key)
 
                                         except Exception as e:
@@ -98,17 +122,21 @@ class TTP:
                             except Exception as e:
                                 print(e)
                     elif data == b'X509_REQUEST':
+                        logger.info('   Received x509 certificate request')
                         self.handle(conn)
+                        
     def handle(self, conn):
         try:
             raw_id_len = receive_data(conn, 4)
             if not raw_id_len: return
             id_len = int.from_bytes(raw_id_len, byteorder='big')
             encID = receive_data(conn, id_len)
+            logger.info('   Received encrypted ID')
             raw_pub_len = receive_data(conn, 4)
             if not raw_pub_len: return
             pub_len = int.from_bytes(raw_pub_len, byteorder='big')
             client_pub_pem = receive_data(conn, pub_len)
+            logger.info('   Received Public Key')
 
             encID_bytes = self.private_key.decrypt(encID, padding.OAEP(
                 mgf=padding.MGF1(algorithm=hashes.SHA256()),
@@ -118,10 +146,11 @@ class TTP:
             client_id_hex = encID_bytes.hex()
             client_pub_key = serialization.load_pem_public_key(client_pub_pem)
             cert = self.create_x509(client_id_hex, client_pub_key)
-
+            logger.info('   Created and signed clients x509 certificate')
             cert_pem = cert.public_bytes(serialization.Encoding.PEM)
             conn.sendall(len(cert_pem).to_bytes(4, byteorder='big'))
             conn.sendall(cert_pem)
+            logger.info('   Sent x509 certificate')
         except Exception as e:
             print(e)
 
