@@ -1,0 +1,133 @@
+\doxysection{ttp.\+TTP Class Reference}
+\label{classttp_1_1_t_t_p}\index{ttp.TTP@{ttp.TTP}}
+
+
+class of the ttp, used to communicate with the user and server, creating x509 certificates  
+
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\textbf{ \+\_\+\+\_\+init\+\_\+\+\_\+} (self)
+\item 
+\textbf{ start} (self)
+\begin{DoxyCompactList}\small\item\em function that allows the ttp to run continuously, listening on the set-\/up port, waiting for messages from server and user \end{DoxyCompactList}\item 
+\textbf{ handle} (self, conn)
+\begin{DoxyCompactList}\small\item\em function used to handle x509 requests from server and user \end{DoxyCompactList}\item 
+\textbf{ create\+\_\+x509} (self, client\+\_\+id\+\_\+hex, client\+\_\+pub\+\_\+key)
+\begin{DoxyCompactList}\small\item\em function used to creating and signing x509 certificates \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\textbf{ private\+\_\+key} = rsa.\+generate\+\_\+private\+\_\+key(public\+\_\+exponent=65537, key\+\_\+size=4096)
+\item 
+\textbf{ public\+\_\+key} = self.\+private\+\_\+key.\+public\+\_\+key()
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+class of the ttp, used to communicate with the user and server, creating x509 certificates 
+
+Definition at line \textbf{ 36} of file \textbf{ ttp.\+py}.
+
+
+
+\label{classttp_1_1_t_t_p_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\index{ttp.TTP@{ttp.TTP}!\_\_init\_\_@{\_\_init\_\_}}
+\index{\_\_init\_\_@{\_\_init\_\_}!ttp.TTP@{ttp.TTP}}
+\doxysubsubsection{\_\_init\_\_()}
+{\footnotesize\ttfamily \label{classttp_1_1_t_t_p_aa7331a032f118b0c280c66e2aabf741d} 
+ttp.\+TTP.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \textbf{ 37} of file \textbf{ ttp.\+py}.
+
+
+
+\label{classttp_1_1_t_t_p_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\index{ttp.TTP@{ttp.TTP}!create\_x509@{create\_x509}}
+\index{create\_x509@{create\_x509}!ttp.TTP@{ttp.TTP}}
+\doxysubsubsection{create\_x509()}
+{\footnotesize\ttfamily \label{classttp_1_1_t_t_p_a5b2ac462a59cda16175c3ca5e0a7fd42} 
+ttp.\+TTP.\+create\+\_\+x509 (\begin{DoxyParamCaption}\item[{}]{self}{, }\item[{}]{client\+\_\+id\+\_\+hex}{, }\item[{}]{client\+\_\+pub\+\_\+key}{}\end{DoxyParamCaption})}
+
+
+
+function used to creating and signing x509 certificates 
+
+
+\begin{DoxyParams}{Parameters}
+{\em client\+\_\+id\+\_\+hex} & client\textquotesingle{}s encrypted ID in hex \\
+\hline
+{\em client\+\_\+pub\+\_\+key} & client\textquotesingle{}s public key \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \textbf{ 166} of file \textbf{ ttp.\+py}.
+
+\index{ttp.TTP@{ttp.TTP}!handle@{handle}}
+\index{handle@{handle}!ttp.TTP@{ttp.TTP}}
+\doxysubsubsection{handle()}
+{\footnotesize\ttfamily \label{classttp_1_1_t_t_p_a3c576f319c072776e0ade5e0f232c050} 
+ttp.\+TTP.\+handle (\begin{DoxyParamCaption}\item[{}]{self}{, }\item[{}]{conn}{}\end{DoxyParamCaption})}
+
+
+
+function used to handle x509 requests from server and user 
+
+
+\begin{DoxyParams}{Parameters}
+{\em conn} & connection with server or user \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \textbf{ 134} of file \textbf{ ttp.\+py}.
+
+\index{ttp.TTP@{ttp.TTP}!start@{start}}
+\index{start@{start}!ttp.TTP@{ttp.TTP}}
+\doxysubsubsection{start()}
+{\footnotesize\ttfamily \label{classttp_1_1_t_t_p_acff5475581513101289482511eb43153} 
+ttp.\+TTP.\+start (\begin{DoxyParamCaption}\item[{}]{self}{}\end{DoxyParamCaption})}
+
+
+
+function that allows the ttp to run continuously, listening on the set-\/up port, waiting for messages from server and user 
+
+
+
+Definition at line \textbf{ 42} of file \textbf{ ttp.\+py}.
+
+
+
+\label{classttp_1_1_t_t_p_doc-variable-members}
+\doxysubsection{Member Data Documentation}
+\index{ttp.TTP@{ttp.TTP}!private\_key@{private\_key}}
+\index{private\_key@{private\_key}!ttp.TTP@{ttp.TTP}}
+\doxysubsubsection{private\_key}
+{\footnotesize\ttfamily \label{classttp_1_1_t_t_p_a965485ec922f771161fc5398f5e59d50} 
+ttp.\+TTP.\+private\+\_\+key = rsa.\+generate\+\_\+private\+\_\+key(public\+\_\+exponent=65537, key\+\_\+size=4096)}
+
+
+
+Definition at line \textbf{ 38} of file \textbf{ ttp.\+py}.
+
+\index{ttp.TTP@{ttp.TTP}!public\_key@{public\_key}}
+\index{public\_key@{public\_key}!ttp.TTP@{ttp.TTP}}
+\doxysubsubsection{public\_key}
+{\footnotesize\ttfamily \label{classttp_1_1_t_t_p_a3524d2082b99e60d050eeb949703d4a3} 
+ttp.\+TTP.\+public\+\_\+key = self.\+private\+\_\+key.\+public\+\_\+key()}
+
+
+
+Definition at line \textbf{ 39} of file \textbf{ ttp.\+py}.
+
+
+
+The documentation for this class was generated from the following file:\+\begin{DoxyCompactItemize}
+\item 
+ttp.\+py\end{DoxyCompactItemize}

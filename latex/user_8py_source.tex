@@ -1,0 +1,260 @@
+\doxysection{user.\+py}
+\label{user_8py_source}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ }
+\DoxyCodeLine{00002\ \textcolor{keyword}{import}\ os}
+\DoxyCodeLine{00003\ \textcolor{keyword}{import}\ logging}
+\DoxyCodeLine{00004\ \textcolor{keyword}{import}\ socket}
+\DoxyCodeLine{00005\ \textcolor{keyword}{from}\ guizero\ \textcolor{keyword}{import}\ App,\ Text,\ TextBox,\ PushButton}
+\DoxyCodeLine{00006\ \textcolor{keyword}{from}\ screeninfo\ \textcolor{keyword}{import}\ get\_monitors}
+\DoxyCodeLine{00007\ \textcolor{keyword}{from}\ cryptography.hazmat.primitives\ \textcolor{keyword}{import}\ hashes,\ serialization}
+\DoxyCodeLine{00008\ \textcolor{keyword}{from}\ cryptography.hazmat.primitives.ciphers\ \textcolor{keyword}{import}\ Cipher,\ algorithms,\ modes}
+\DoxyCodeLine{00009\ \textcolor{keyword}{from}\ cryptography.hazmat.primitives.asymmetric\ \textcolor{keyword}{import}\ rsa,\ padding}
+\DoxyCodeLine{00010\ \textcolor{keyword}{from}\ cryptography.hazmat.primitives\ \textcolor{keyword}{import}\ padding\ \textcolor{keyword}{as}\ aes\_padding}
+\DoxyCodeLine{00011\ \textcolor{keyword}{from}\ cryptography\ \textcolor{keyword}{import}\ x509}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ logger\ =\ logging.getLogger(\_\_name\_\_)}
+\DoxyCodeLine{00015\ formatter\ =\ logging.Formatter(\textcolor{stringliteral}{"{}\%(asctime)s;\%(levelname)s;\%(message)s"{}},\ \textcolor{stringliteral}{"{}[\%Y-\/\%m-\/\%d\ \%H:\%M:\%S]"{}})}
+\DoxyCodeLine{00016\ logger.setLevel(logging.INFO)}
+\DoxyCodeLine{00017\ }
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ server\_host\ =\ os.getenv(\textcolor{stringliteral}{'BSK\_SERVER\_IP'},\ \textcolor{stringliteral}{'127.0.0.1'})}
+\DoxyCodeLine{00020\ server\_port\ =\ int(os.getenv(\textcolor{stringliteral}{'BSK\_SERVER\_PORT'},\ 8887))}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ ttp\_host\ =\ os.getenv(\textcolor{stringliteral}{'BSK\_TTP\_IP'},\ \textcolor{stringliteral}{'127.0.0.1'})}
+\DoxyCodeLine{00023\ ttp\_port\ =\ int(os.getenv(\textcolor{stringliteral}{'BSK\_TTP\_PORT'},\ 8888))}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ logged\_in\_ttp\ =\ \textcolor{keyword}{False}}
+\DoxyCodeLine{00026\ signed\_in\ =\ \textcolor{keyword}{False}}
+\DoxyCodeLine{00027\ server\_socket\ =\ \textcolor{keywordtype}{None}}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \textcolor{keyword}{def\ }receive\_data(conn,\ n):}
+\DoxyCodeLine{00031\ \ \ \ \ data\ =\ b\textcolor{stringliteral}{''}}
+\DoxyCodeLine{00032\ \ \ \ \ \textcolor{keywordflow}{while}\ len(data)\ <\ n:}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ packet\ =\ conn.recv(n\ -\/\ len(data))}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ \textcolor{keywordflow}{not}\ packet:}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keywordtype}{None}}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \ data\ +=\ packet}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{keywordflow}{return}\ data}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \textcolor{keyword}{class\ }GuizeroHandler(logging.Handler):}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{keyword}{def\ }\_\_init\_\_(self,\ text\_widget):}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ super().\_\_init\_\_()}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ self.text\_widget\ =\ text\_widget}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keyword}{def\ }emit(self,\ record):}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ log\_entry\ =\ self.format(record)}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ self.text\_widget.enable()}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ self.text\_widget.append(log\_entry)}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ self.text\_widget.disable()}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \textcolor{keyword}{class\ }Client:}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{keyword}{def\ }\_\_init\_\_(self):}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ self.private\_key\ =\ rsa.generate\_private\_key(public\_exponent=65537,\ key\_size=4096)}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ self.public\_key\ =\ self.private\_key.public\_key()}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ self.clientID\ =\ \textcolor{keywordtype}{None}}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ self.encryptedID\ =\ \textcolor{keywordtype}{None}}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ self.session\_key\ =\ \textcolor{keywordtype}{None}}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ self.x509cert\ =\ \textcolor{keywordtype}{None}}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \ \ \ \ }
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{keyword}{def\ }generate\_id(self):}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ self.clientID\ =\ hashes.Hash(hashes.SHA256())}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ self.clientID.update(\textcolor{stringliteral}{"{}Client1"{}}.encode())}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ self.clientID\ =\ self.clientID.finalize()}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \ \ \ \ }
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{keyword}{def\ }encrypted\_msg(self,\ message):}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ iv\ =\ os.urandom(16)}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ padder\ =\ aes\_padding.PKCS7(128).padder()}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ padded\_data\ =\ padder.update(message)\ +\ padder.finalize()}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ cipher\ =\ Cipher(algorithms.AES(self.session\_key),\ modes.CBC(iv))}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ encryptor\ =\ cipher.encryptor()}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ text\ =\ encryptor.update(padded\_data)\ +\ encryptor.finalize()}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ iv\ +\ text}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \ \ \ \ }
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{keyword}{def\ }decrypt\_msg(self,\ data):}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ iv\ =\ data[:16]}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ text\ =\ data[16:]}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ cipher\ =\ Cipher(algorithms.AES(self.session\_key),\ modes.CBC(iv))}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ decryptor\ =\ cipher.decryptor()}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ padded\_data\ =\ decryptor.update(text)\ +\ decryptor.finalize()}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ unpadder\ =\ aes\_padding.PKCS7(128).unpadder()}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{try}:}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ final\_data\ =\ unpadder.update(padded\_data)\ +\ unpadder.finalize()}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ final\_data.decode(\textcolor{stringliteral}{'utf-\/8'})}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{except}\ ValueError:}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ padded\_data.decode(\textcolor{stringliteral}{'utf-\/8'},\ errors=\textcolor{stringliteral}{'ignore'})}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00094\ \ \ \ \ }
+\DoxyCodeLine{00095\ \ \ \ \ \textcolor{keyword}{def\ }encrypt\_id\_and\_obtain\_x509cert(self):}
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \textcolor{keyword}{global}\ logged\_in\_ttp}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ ttp\_socket\ =\ socket.socket(socket.AF\_INET,\ socket.SOCK\_STREAM)}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ ttp\_socket.connect((ttp\_host,\ ttp\_port))}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ ttp\_socket.sendall(b\textcolor{stringliteral}{'client\_login'})}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Logged\ in\ to\ TTP'})}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ ttp\_key\_length\ =\ receive\_data(ttp\_socket,\ 4)}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ ttp\_key\_length\ =\ int.from\_bytes(ttp\_key\_length,\ byteorder=\textcolor{stringliteral}{'big'})}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ ttp\_key\ =\ b\textcolor{stringliteral}{''}}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ len(ttp\_key)\ <\ ttp\_key\_length:}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ data\ =\ ttp\_socket.recv(ttp\_key\_length\ -\/\ len(ttp\_key))}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ \textcolor{keywordflow}{not}\ data:\ \textcolor{keywordflow}{break}}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \ \ \ \ ttp\_key\ +=\ data}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ ttp\_public\_key\ =\ serialization.load\_pem\_public\_key(ttp\_key)}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Received\ TTP\ Public\ Key'})}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ self.encryptedID\ =\ ttp\_public\_key.encrypt(self.clientID,}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()),}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ algorithm=hashes.SHA256(),}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ label=\textcolor{keywordtype}{None}))}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Encrypted\ my\ ID\ with\ TTP\ Public\ Key'})}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ ttp\_socket.sendall(b\textcolor{stringliteral}{'X509\_REQUEST'})}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ encID\_len\ =\ len(self.encryptedID)}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ ttp\_socket.sendall(encID\_len.to\_bytes(4,\ byteorder=\textcolor{stringliteral}{'big'}))}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ ttp\_socket.sendall(self.encryptedID)}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Sent\ my\ encrypted\ ID\ to\ TTP'})}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ public\_pem\ =\ self.public\_key.public\_bytes(encoding=serialization.Encoding.PEM,}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ format=serialization.PublicFormat.SubjectPublicKeyInfo)}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ ttp\_socket.sendall(len(public\_pem).to\_bytes(4,\ byteorder=\textcolor{stringliteral}{'big'}))}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ ttp\_socket.sendall(public\_pem)}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Sent\ my\ Public\ Key\ to\ TTP'})}
+\DoxyCodeLine{00128\ }
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ raw\_cert\_len\ =\ receive\_data(ttp\_socket,\ 4)}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ raw\_cert\_len:}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \ \ \ \ cert\_len\ =\ int.from\_bytes(raw\_cert\_len,\ byteorder=\textcolor{stringliteral}{'big'})}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \ \ \ \ cert\_pem\ =\ receive\_data(ttp\_socket,\ cert\_len)}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ \ \ \ \ \ self.x509cert\ =\ x509.load\_pem\_x509\_certificate(cert\_pem)}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Obtained\ x509\ certificate'})}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ ttp\_socket.close()}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ ttp\_socket\ =\ \textcolor{keywordtype}{None}}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ logged\_in\_ttp\ =\ \textcolor{keyword}{True}}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \textcolor{keyword}{def\ }gui(client:\ Client):}
+\DoxyCodeLine{00141\ \ \ \ \ }
+\DoxyCodeLine{00142\ \ \ \ \ \textcolor{keyword}{def\ }hoverSend():}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ button.bg\ =\ \textcolor{stringliteral}{"{}\#28d9e0"{}}}
+\DoxyCodeLine{00144\ \ \ \ \ }
+\DoxyCodeLine{00145\ \ \ \ \ \textcolor{keyword}{def\ }unhoverSend():}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ button.bg\ =\ \textcolor{stringliteral}{"{}\#c7c7c7"{}}}
+\DoxyCodeLine{00147\ \ \ \ \ }
+\DoxyCodeLine{00149\ \ \ \ \ \textcolor{keyword}{def\ }submit():}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ \textcolor{keyword}{global}\ logged\_in\_ttp}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \textcolor{keyword}{global}\ signed\_in}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \textcolor{keyword}{global}\ server\_socket}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ \textcolor{keywordflow}{not}\ signed\_in:}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \ \ \ \ server\_socket\ =\ socket.socket(socket.AF\_INET,\ socket.SOCK\_STREAM)}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \ \ \ \ server\_socket.connect((server\_host,\ server\_port))}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ \textcolor{keywordflow}{not}\ logged\_in\_ttp:}
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ client.encrypt\_id\_and\_obtain\_x509cert()}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ logged\_in\_ttp\ =\ \textcolor{keyword}{True}}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \ \ \ \ server\_socket.sendall(b\textcolor{stringliteral}{'AUTH\_REQUEST'})}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Sent\ authorization\ request'})}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \ \ \ \ response\ =\ receive\_data(server\_socket,\ 7)}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ response\ ==\ b\textcolor{stringliteral}{'AUTH\_OK'}:}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Server\ has\ been\ correctly\ authenticated'})}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ response\ =\ receive\_data(server\_socket,\ 9)}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ response\ ==\ b\textcolor{stringliteral}{'USER\_AUTH'}:}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ User\ has\ received\ request\ from\ TTP\ for\ User\ Authentication'})}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ server\_socket.sendall(b\textcolor{stringliteral}{'USER\_AUTH\_REQUEST'})}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ User\ has\ sent\ a\ request\ for\ User\ Authentication'})}
+\DoxyCodeLine{00171\ }
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ encID\_len\ =\ len(client.encryptedID)}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ server\_socket.sendall(encID\_len.to\_bytes(4,\ byteorder=\textcolor{stringliteral}{'big'}))}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ server\_socket.sendall(client.encryptedID)}
+\DoxyCodeLine{00175\ }
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cert\_pem\ =\ client.x509cert.public\_bytes(serialization.Encoding.PEM)}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ server\_socket.sendall(len(cert\_pem).to\_bytes(4,\ byteorder=\textcolor{stringliteral}{'big'}))}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ server\_socket.sendall(cert\_pem)}
+\DoxyCodeLine{00179\ }
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ final\_response\ =\ receive\_data(server\_socket,\ 12)}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ final\_response\ ==\ b\textcolor{stringliteral}{'USER\_AUTH\_OK'}:}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ User\ has\ been\ correctly\ authenticated'})}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ses\_key\_len\ =\ int.from\_bytes(receive\_data(server\_socket,\ 4),\ byteorder=\textcolor{stringliteral}{'big'})}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enc\_ses\_key\ =\ receive\_data(server\_socket,\ ses\_key\_len)}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ client.session\_key\ =\ client.private\_key.decrypt(enc\_ses\_key,}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ padding.OAEP(mgf=padding.MGF1(hashes.SHA256()),}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ algorithm=hashes.SHA256(),}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ label=\textcolor{keywordtype}{None}))}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Obtained\ session\ key'})}
+\DoxyCodeLine{00190\ }
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \ \ \ \ intro\_text.clear()}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \ \ \ \ intro\_text.append(\textcolor{stringliteral}{"{}\(\backslash\)nSend\ data\ to\ the\ server\(\backslash\)n"{}})}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \ \ \ \ box.show()}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \ \ \ \ space.show()}
+\DoxyCodeLine{00195\ \ \ \ \ \ \ \ \ \ \ \ \ button.text\ =\ \textcolor{stringliteral}{"{}Send\ data"{}}}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \ \ \ \ signed\_in\ =\ \textcolor{keyword}{True}}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \ \ \ \ submitted\_data\ =\ box.value.encode(\textcolor{stringliteral}{'utf-\/8'})}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ \ \ \ \ text\_data\ =\ box.value}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \ \ \ \ box.clear()}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ submitted\_data\ !=\ b\textcolor{stringliteral}{''}:}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ server\_socket.sendall(client.encrypted\_msg(submitted\_data))}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Sent\ message\ to\ the\ server:\ '}\ +\ text\_data)}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ received\ =\ client.decrypt\_msg(receive\_data(server\_socket,\ 48))}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Message\ from\ the\ server:\ '}\ +\ received)}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ intro\_text.clear()}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ intro\_text.append(\textcolor{stringliteral}{"{}\(\backslash\)nLog\ in\ to\ the\ service\(\backslash\)n"{}})}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ box.hide()}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ space.hide()}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ button.text\ =\ \textcolor{stringliteral}{"{}Sign\ in"{}}}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ signed\_in\ =\ \textcolor{keyword}{False}}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ msgSent\ =\ Text(app,\ text=\textcolor{stringliteral}{"{}Message\ has\ been\ sent"{}},\ color=\textcolor{stringliteral}{"{}\#38F527"{}})}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ msgSent.after(5000,\ msgSent.destroy)}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00215\ \ \ \ \ }
+\DoxyCodeLine{00216\ \ \ \ \ monitors\ =\ get\_monitors()}
+\DoxyCodeLine{00217\ \ \ \ \ m\ =\ monitors[0]}
+\DoxyCodeLine{00218\ \ \ \ \ app\ =\ App(title=\textcolor{stringliteral}{"{}Client"{}},\ bg=\textcolor{stringliteral}{"{}\#3B3B3B"{}})}
+\DoxyCodeLine{00219\ \ \ \ \ app.height\ =\ round(m.height\ *\ 0.4)}
+\DoxyCodeLine{00220\ \ \ \ \ app.width\ =\ round(m.width\ *\ 0.4)}
+\DoxyCodeLine{00221\ }
+\DoxyCodeLine{00222\ \ \ \ \ intro\_text\ =\ Text(app,\ text=\textcolor{stringliteral}{"{}\(\backslash\)nLog\ in\ to\ the\ service\(\backslash\)n"{}},\ color=\textcolor{stringliteral}{"{}white"{}})}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \ \ \ \ box\ =\ TextBox(app,\ width=round(app.width\ /\ 20))}
+\DoxyCodeLine{00225\ \ \ \ \ box.bg\ =\ \textcolor{stringliteral}{"{}white"{}}}
+\DoxyCodeLine{00226\ \ \ \ \ box.hide()}
+\DoxyCodeLine{00227\ }
+\DoxyCodeLine{00228\ \ \ \ \ space\ =\ Text(app,\ text=\textcolor{stringliteral}{"{}\(\backslash\)n"{}})}
+\DoxyCodeLine{00229\ \ \ \ \ space.hide()}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00231\ \ \ \ \ button\ =\ PushButton(app,\ text=\textcolor{stringliteral}{"{}Sign\ in"{}})}
+\DoxyCodeLine{00232\ \ \ \ \ button.bg\ =\ \textcolor{stringliteral}{"{}\#C7C7C7"{}}}
+\DoxyCodeLine{00233\ }
+\DoxyCodeLine{00234\ \ \ \ \ Text(app,\ text=\textcolor{stringliteral}{"{}\(\backslash\)n"{}})}
+\DoxyCodeLine{00235\ }
+\DoxyCodeLine{00236\ \ \ \ \ button.when\_mouse\_enters\ =\ hoverSend}
+\DoxyCodeLine{00237\ \ \ \ \ button.when\_mouse\_leaves\ =\ unhoverSend}
+\DoxyCodeLine{00238\ \ \ \ \ button.when\_clicked\ =\ submit}
+\DoxyCodeLine{00239\ }
+\DoxyCodeLine{00240\ \ \ \ \ console\_logs\ =\ TextBox(app,\ multiline=\textcolor{keyword}{True},\ scrollbar=\textcolor{keyword}{True},\ width=\textcolor{stringliteral}{"{}fill"{}},\ height=\textcolor{stringliteral}{"{}fill"{}})}
+\DoxyCodeLine{00241\ \ \ \ \ console\_logs.bg\ =\ \textcolor{stringliteral}{"{}black"{}}}
+\DoxyCodeLine{00242\ \ \ \ \ console\_logs.text\_color\ =\ \textcolor{stringliteral}{"{}white"{}}}
+\DoxyCodeLine{00243\ \ \ \ \ console\_logs.font\ =\ \textcolor{stringliteral}{"{}Arial"{}}}
+\DoxyCodeLine{00244\ \ \ \ \ console\_logs.disable()}
+\DoxyCodeLine{00245\ }
+\DoxyCodeLine{00246\ \ \ \ \ gh\ =\ GuizeroHandler(console\_logs)}
+\DoxyCodeLine{00247\ \ \ \ \ gh.setLevel(logging.INFO)}
+\DoxyCodeLine{00248\ \ \ \ \ gh.setFormatter(formatter)}
+\DoxyCodeLine{00249\ \ \ \ \ logger.addHandler(gh)}
+\DoxyCodeLine{00250\ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ App\ started'})}
+\DoxyCodeLine{00251\ }
+\DoxyCodeLine{00252\ \ \ \ \ app.display()}
+\DoxyCodeLine{00253\ }
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00255\ \textcolor{keywordflow}{if}\ \_\_name\_\_\ ==\ \textcolor{stringliteral}{'\_\_main\_\_'}:}
+\DoxyCodeLine{00256\ \ \ \ \ client\ =\ Client()}
+\DoxyCodeLine{00257\ \ \ \ \ client.generate\_id()}
+\DoxyCodeLine{00258\ \ \ \ \ gui(client)}
+
+\end{DoxyCode}
