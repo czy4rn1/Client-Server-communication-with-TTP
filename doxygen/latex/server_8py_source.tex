@@ -1,0 +1,251 @@
+\doxysection{server.\+py}
+\hypertarget{server_8py_source}{}\label{server_8py_source}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00001}00001\ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00002}00002\ \textcolor{keyword}{import}\ os}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00003}00003\ \textcolor{keyword}{import}\ socket}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00004}00004\ \textcolor{keyword}{import}\ logging}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00005}00005\ \textcolor{keyword}{from}\ cryptography.hazmat.primitives\ \textcolor{keyword}{import}\ hashes,\ serialization}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00006}00006\ \textcolor{keyword}{from}\ cryptography.hazmat.primitives.asymmetric\ \textcolor{keyword}{import}\ rsa,\ padding}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00007}00007\ \textcolor{keyword}{from}\ cryptography\ \textcolor{keyword}{import}\ x509}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00008}00008\ \textcolor{keyword}{from}\ cryptography.hazmat.primitives.ciphers\ \textcolor{keyword}{import}\ Cipher,\ algorithms,\ modes}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00009}00009\ \textcolor{keyword}{from}\ cryptography.hazmat.primitives\ \textcolor{keyword}{import}\ padding\ \textcolor{keyword}{as}\ aes\_padding}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00010}00010\ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00011}00011\ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00012}00012\ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00013}00013\ logger\ =\ logging.getLogger(\_\_name\_\_)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00014}00014\ formatter\ =\ logging.Formatter(\textcolor{stringliteral}{"{}\%(asctime)s;\%(levelname)s;\%(message)s"{}},\ \textcolor{stringliteral}{"{}[\%Y-\/\%m-\/\%d\ \%H:\%M:\%S]"{}})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00015}00015\ logger.setLevel(logging.INFO)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00016}00016\ fh\ =\ logging.FileHandler(\textcolor{stringliteral}{'server\_log.log'},\ encoding=\textcolor{stringliteral}{'utf-\/8'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00017}00017\ fh.setLevel(logging.INFO)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00018}00018\ fh.setFormatter(formatter)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00019}00019\ logger.addHandler(fh)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00020}00020\ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00021}00021\ ttp\_host\ =\ \textcolor{stringliteral}{"{}bsk\_ttp\_service"{}}}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00022}00022\ ttp\_port\ =\ 8887}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00023}00023\ ttp\_socket\ =\ \textcolor{keywordtype}{None}}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00024}00024\ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00025}00025\ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00026}00026\ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00027}00027\ \textcolor{keyword}{def\ }receive\_data(conn,\ n):}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00028}00028\ \ \ \ \ data\ =\ b\textcolor{stringliteral}{''}}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00029}00029\ \ \ \ \ \textcolor{keywordflow}{while}\ len(data)\ <\ n:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00030}00030\ \ \ \ \ \ \ \ \ packet\ =\ conn.recv(n\ -\/\ len(data))}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00031}00031\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ \textcolor{keywordflow}{not}\ packet:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00032}00032\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keywordtype}{None}}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00033}00033\ \ \ \ \ \ \ \ \ data\ +=\ packet}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00034}00034\ \ \ \ \ \textcolor{keywordflow}{return}\ data}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00035}00035\ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00036}00036\ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00037}\doxymbox{\hyperlink{classserver_1_1_server}{00037}}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classserver_1_1_server}{Server}}:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00038}00038\ \ \ \ \ \textcolor{keyword}{def\ }\_\_init\_\_(self):}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00039}00039\ \ \ \ \ \ \ \ \ self.\doxymbox{\hyperlink{classserver_1_1_server_af1e95c1b023e29d688979528c8260d07}{host}}\ =\ \textcolor{stringliteral}{"{}0.0.0.0"{}}}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00040}00040\ \ \ \ \ \ \ \ \ self.\doxymbox{\hyperlink{classserver_1_1_server_a71fa8c5fb354f17babb1263f549cba1a}{port}}\ =\ 8887}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00041}00041\ \ \ \ \ \ \ \ \ self.\doxymbox{\hyperlink{classserver_1_1_server_a2745dbdf1c35f7a05ae9d3f8081567d9}{private\_key}}\ =\ rsa.generate\_private\_key(public\_exponent=65537,\ key\_size=4096)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00042}00042\ \ \ \ \ \ \ \ \ self.\doxymbox{\hyperlink{classserver_1_1_server_a92a2bd0cafb1140caa6cd263c521b457}{public\_key}}\ =\ self.\doxymbox{\hyperlink{classserver_1_1_server_a2745dbdf1c35f7a05ae9d3f8081567d9}{private\_key}}.public\_key()}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00043}00043\ \ \ \ \ \ \ \ \ self.\doxymbox{\hyperlink{classserver_1_1_server_a8f978e49a33b6aae97eecc563838d59a}{session\_key}}\ =\ \textcolor{keywordtype}{None}}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00044}00044\ \ \ \ \ \ \ \ \ self.\doxymbox{\hyperlink{classserver_1_1_server_a55437ee1a36e93394b8bf2853445fbe9}{serverID}}\ =\ \textcolor{keywordtype}{None}}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00045}00045\ \ \ \ \ \ \ \ \ self.\doxymbox{\hyperlink{classserver_1_1_server_a367dd84bc71e8c7d43f21f39eda1897f}{encryptedID}}\ =\ \textcolor{keywordtype}{None}}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00046}00046\ \ \ \ \ \ \ \ \ self.\doxymbox{\hyperlink{classserver_1_1_server_a116ef2a99a6fed0c2500db2c646ed84a}{x509cert}}\ =\ \textcolor{keywordtype}{None}}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00047}00047\ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00048}00048\ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00049}\doxymbox{\hyperlink{classserver_1_1_server_a7712b83449d5e1ec1f2bb5c213e96e33}{00049}}\ \ \ \ \ \textcolor{keyword}{def\ }\doxymbox{\hyperlink{classserver_1_1_server_a7712b83449d5e1ec1f2bb5c213e96e33}{start}}(self):}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00050}00050\ \ \ \ \ \ \ \ \ \textcolor{keyword}{global}\ ttp\_socket}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00051}00051\ \ \ \ \ \ \ \ \ \textcolor{keyword}{with}\ socket.socket(socket.AF\_INET,\ socket.SOCK\_STREAM)\ \textcolor{keyword}{as}\ s:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00052}00052\ \ \ \ \ \ \ \ \ \ \ \ \ s.bind((self.\doxymbox{\hyperlink{classserver_1_1_server_af1e95c1b023e29d688979528c8260d07}{host}},\ self.\doxymbox{\hyperlink{classserver_1_1_server_a71fa8c5fb354f17babb1263f549cba1a}{port}}))}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00053}00053\ \ \ \ \ \ \ \ \ \ \ \ \ s.listen()}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00054}00054\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ \textcolor{keyword}{True}:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00055}00055\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ conn,\ addr\ =\ s.accept()}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00056}00056\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{with}\ conn:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00057}00057\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ print(f\textcolor{stringliteral}{"{}Connected\ by\ \{addr\}"{}})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00058}00058\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ \textcolor{keyword}{True}:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00059}00059\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{try}:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00060}00060\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ data\ =\ conn.recv(1024)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00061}00061\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ \textcolor{keywordflow}{not}\ data:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00062}00062\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break}}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00063}00063\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ self.\doxymbox{\hyperlink{classserver_1_1_server_aa6a3cf346a1c531e536ecdb825f7fa13}{handle\_client}}(data,\ conn)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00064}00064\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{except}\ ConnectionResetError:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00065}00065\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ print(\textcolor{stringliteral}{"{}Abrupt\ disconnect\ detected"{}})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00066}00066\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break}}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00067}00067\ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00068}00068\ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00070}\doxymbox{\hyperlink{classserver_1_1_server_ae6c32791bf2a9d812a166a8864de0587}{00070}}\ \ \ \ \ \textcolor{keyword}{def\ }\doxymbox{\hyperlink{classserver_1_1_server_ae6c32791bf2a9d812a166a8864de0587}{encrypted\_msg}}(self,\ message):}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00071}00071\ \ \ \ \ \ \ \ \ iv\ =\ os.urandom(16)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00072}00072\ \ \ \ \ \ \ \ \ padder\ =\ aes\_padding.PKCS7(128).padder()}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00073}00073\ \ \ \ \ \ \ \ \ padded\_data\ =\ padder.update(message)\ +\ padder.finalize()}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00074}00074\ \ \ \ \ \ \ \ \ cipher\ =\ Cipher(algorithms.AES(self.\doxymbox{\hyperlink{classserver_1_1_server_a8f978e49a33b6aae97eecc563838d59a}{session\_key}}),\ modes.CBC(iv))}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00075}00075\ \ \ \ \ \ \ \ \ encryptor\ =\ cipher.encryptor()}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00076}00076\ \ \ \ \ \ \ \ \ text\ =\ encryptor.update(padded\_data)\ +\ encryptor.finalize()}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00077}00077\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ iv\ +\ text}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00078}00078\ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00079}00079\ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00081}\doxymbox{\hyperlink{classserver_1_1_server_a2e5ce6fe7bbef151e80837a0c3209b31}{00081}}\ \ \ \ \ \textcolor{keyword}{def\ }\doxymbox{\hyperlink{classserver_1_1_server_a2e5ce6fe7bbef151e80837a0c3209b31}{decrypt\_msg}}(self,\ data):}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00082}00082\ \ \ \ \ \ \ \ \ iv\ =\ data[:16]}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00083}00083\ \ \ \ \ \ \ \ \ text\ =\ data[16:]}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00084}00084\ \ \ \ \ \ \ \ \ cipher\ =\ Cipher(algorithms.AES(self.\doxymbox{\hyperlink{classserver_1_1_server_a8f978e49a33b6aae97eecc563838d59a}{session\_key}}),\ modes.CBC(iv))}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00085}00085\ \ \ \ \ \ \ \ \ decryptor\ =\ cipher.decryptor()}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00086}00086\ \ \ \ \ \ \ \ \ padded\_data\ =\ decryptor.update(text)\ +\ decryptor.finalize()}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00087}00087\ \ \ \ \ \ \ \ \ unpadder\ =\ aes\_padding.PKCS7(128).unpadder()}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00088}00088\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{try}:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00089}00089\ \ \ \ \ \ \ \ \ \ \ \ \ final\_data\ =\ unpadder.update(padded\_data)\ +\ unpadder.finalize()}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00090}00090\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ final\_data.decode(\textcolor{stringliteral}{'utf-\/8'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00091}00091\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{except}\ ValueError:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00092}00092\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ padded\_data.decode(\textcolor{stringliteral}{'utf-\/8'},\ errors=\textcolor{stringliteral}{'ignore'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00093}00093\ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00094}00094\ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00098}\doxymbox{\hyperlink{classserver_1_1_server_aa6a3cf346a1c531e536ecdb825f7fa13}{00098}}\ \ \ \ \ \textcolor{keyword}{def\ }\doxymbox{\hyperlink{classserver_1_1_server_aa6a3cf346a1c531e536ecdb825f7fa13}{handle\_client}}(self,\ data,\ conn):}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00099}00099\ \ \ \ \ \ \ \ \ \textcolor{keyword}{global}\ ttp\_socket}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00100}00100\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ data\ ==\ b\textcolor{stringliteral}{'AUTH\_REQUEST'}:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00101}00101\ \ \ \ \ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Received\ authentication\ request'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00102}00102\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ ttp\_socket\ \textcolor{keywordflow}{is}\ \textcolor{keywordtype}{None}:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00103}00103\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ttp\_socket\ =\ socket.socket(socket.AF\_INET,\ socket.SOCK\_STREAM)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00104}00104\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ttp\_socket.connect((ttp\_host,\ ttp\_port))}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00105}00105\ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00106}00106\ \ \ \ \ \ \ \ \ \ \ \ \ ttp\_socket.sendall(data)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00107}00107\ \ \ \ \ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Request\ sent\ forward\ to\ TTP'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00108}00108\ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00109}00109\ \ \ \ \ \ \ \ \ \ \ \ \ encID\_len\ =\ len(self.\doxymbox{\hyperlink{classserver_1_1_server_a367dd84bc71e8c7d43f21f39eda1897f}{encryptedID}})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00110}00110\ \ \ \ \ \ \ \ \ \ \ \ \ ttp\_socket.sendall(encID\_len.to\_bytes(4,\ byteorder=\textcolor{stringliteral}{'big'}))}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00111}00111\ \ \ \ \ \ \ \ \ \ \ \ \ ttp\_socket.sendall(self.\doxymbox{\hyperlink{classserver_1_1_server_a367dd84bc71e8c7d43f21f39eda1897f}{encryptedID}})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00112}00112\ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00113}00113\ \ \ \ \ \ \ \ \ \ \ \ \ cert\_pem\ =\ self.\doxymbox{\hyperlink{classserver_1_1_server_a116ef2a99a6fed0c2500db2c646ed84a}{x509cert}}.public\_bytes(serialization.Encoding.PEM)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00114}00114\ \ \ \ \ \ \ \ \ \ \ \ \ ttp\_socket.sendall(len(cert\_pem).to\_bytes(4,\ byteorder=\textcolor{stringliteral}{'big'}))}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00115}00115\ \ \ \ \ \ \ \ \ \ \ \ \ ttp\_socket.sendall(cert\_pem)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00116}00116\ \ \ \ \ \ \ \ \ \ \ \ \ response\ =\ receive\_data(ttp\_socket,\ 7)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00117}00117\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ response\ ==\ b\textcolor{stringliteral}{'AUTH\_OK'}:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00118}00118\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Server\ has\ been\ correctly\ authenticated'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00119}00119\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ conn.sendall(response)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00120}00120\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ response\ =\ receive\_data(ttp\_socket,\ 9)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00121}00121\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ response\ ==\ b\textcolor{stringliteral}{'USER\_AUTH'}:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00122}00122\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Sent\ information\ about\ User\ Authentication\ to\ User'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00123}00123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ conn.sendall(response)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00124}00124\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ response\ =\ receive\_data(conn,\ 17)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00125}00125\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ response\ ==\ b\textcolor{stringliteral}{'USER\_AUTH\_REQUEST'}:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00126}00126\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Received\ authentication\ request\ from\ the\ User'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00127}00127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ttp\_socket.sendall(response)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00128}00128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ user\_raw\_encID\_len\ =\ receive\_data(conn,\ 4)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00129}00129\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ user\_raw\_encID\_len:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00130}00130\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ user\_encID\_len\ =\ int.from\_bytes(user\_raw\_encID\_len,\ byteorder=\textcolor{stringliteral}{'big'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00131}00131\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ user\_encID\ =\ receive\_data(conn,\ user\_encID\_len)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00132}00132\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ttp\_socket.sendall(user\_encID\_len.to\_bytes(4,\ byteorder=\textcolor{stringliteral}{'big'}))}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00133}00133\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ttp\_socket.sendall(user\_encID)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00134}00134\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Sent\ Users\ encrypted\ ID\ forward\ to\ TTP'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00135}00135\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00136}00136\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ logger.error(\textcolor{stringliteral}{'\ \ AUTHENTICATION\ FAILED'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00137}00137\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ttp\_socket.close()}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00138}00138\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ttp\_socket\ =\ \textcolor{keywordtype}{None}}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00139}00139\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ conn.sendall(b\textcolor{stringliteral}{'-\/-\/-\/-\/-\/-\/-\/ERROR'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00140}00140\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00141}00141\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ user\_raw\_cert\_len\ =\ receive\_data(conn,\ 4)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00142}00142\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ user\_raw\_cert\_len:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00143}00143\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ user\_cert\_len\ =\ int.from\_bytes(user\_raw\_cert\_len,\ byteorder=\textcolor{stringliteral}{'big'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00144}00144\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ user\_cert\_pem\ =\ receive\_data(conn,\ user\_cert\_len)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00145}00145\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ttp\_socket.sendall(user\_cert\_len.to\_bytes(4,\ byteorder=\textcolor{stringliteral}{'big'}))}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00146}00146\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ttp\_socket.sendall(user\_cert\_pem)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00147}00147\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Sent\ Users\ x509\ certificate\ forward\ to\ TTP'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00148}00148\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00149}00149\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ logger.error(\textcolor{stringliteral}{'\ \ AUTHENTICATION\ FAILED'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00150}00150\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ttp\_socket.close()}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00151}00151\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ttp\_socket\ =\ \textcolor{keywordtype}{None}}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00152}00152\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ conn.sendall(b\textcolor{stringliteral}{'-\/-\/-\/-\/-\/-\/-\/ERROR'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00153}00153\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00154}00154\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ final\_response\ =\ receive\_data(ttp\_socket,\ 12)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00155}00155\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ final\_response\ ==\ b\textcolor{stringliteral}{'USER\_AUTH\_OK'}:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00156}00156\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ User\ has\ been\ correctly\ authenticated'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00157}00157\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ses\_key\_len\ =\ int.from\_bytes(receive\_data(ttp\_socket,\ 4),\ byteorder=\textcolor{stringliteral}{'big'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00158}00158\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ enc\_ses\_key\ =\ receive\_data(ttp\_socket,\ ses\_key\_len)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00159}00159\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ self.\doxymbox{\hyperlink{classserver_1_1_server_a8f978e49a33b6aae97eecc563838d59a}{session\_key}}\ =\ self.\doxymbox{\hyperlink{classserver_1_1_server_a2745dbdf1c35f7a05ae9d3f8081567d9}{private\_key}}.decrypt(enc\_ses\_key,}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00160}00160\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ padding.OAEP(mgf=padding.MGF1(hashes.SHA256()),}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00161}00161\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ algorithm=hashes.SHA256(),}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00162}00162\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ label=\textcolor{keywordtype}{None}))}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00163}00163\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Obtained\ session\ key'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00164}00164\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ user\_raw\_ses\_key\_len\ =\ receive\_data(ttp\_socket,\ 4)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00165}00165\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ user\_ses\_key\_len\ =\ int.from\_bytes(user\_raw\_ses\_key\_len,\ byteorder=\textcolor{stringliteral}{'big'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00166}00166\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ user\_enc\_ses\_key\ =\ receive\_data(ttp\_socket,\ user\_ses\_key\_len)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00167}00167\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ conn.sendall(final\_response)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00168}00168\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ conn.sendall(user\_raw\_ses\_key\_len)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00169}00169\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ conn.sendall(user\_enc\_ses\_key)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00170}00170\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00171}00171\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ logger.error(\textcolor{stringliteral}{'\ \ USER\ AUTHENTICATION\ FAILED'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00172}00172\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ conn.sendall(b\textcolor{stringliteral}{'-\/-\/-\/-\/-\/-\/-\/ERROR'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00173}00173\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00174}00174\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ logger.error(\textcolor{stringliteral}{'\ \ UNEXPECTED\ RESPONSE.\ AUTHENTICATION\ FAILED'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00175}00175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ttp\_socket.sendall(b\textcolor{stringliteral}{'-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/ERROR'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00176}00176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00177}00177\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ logger.error(\textcolor{stringliteral}{'\ \ UNEXPECTED\ RESPONSE.\ AUTHENTICATION\ FAILED'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00178}00178\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ conn.sendall(b\textcolor{stringliteral}{'-\/-\/-\/-\/ERROR'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00179}00179\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00180}00180\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ logger.error(\textcolor{stringliteral}{'\ \ SERVER\ AUTHENTICATION\ FAILED'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00181}00181\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ conn.sendall(b\textcolor{stringliteral}{'-\/-\/ERROR'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00182}00182\ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00183}00183\ \ \ \ \ \ \ \ \ \ \ \ \ ttp\_socket.close()}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00184}00184\ \ \ \ \ \ \ \ \ \ \ \ \ ttp\_socket\ =\ \textcolor{keywordtype}{None}}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00185}00185\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elif}\ data\ !=\ b\textcolor{stringliteral}{''}:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00186}00186\ \ \ \ \ \ \ \ \ \ \ \ \ received\_text\ =\ self.\doxymbox{\hyperlink{classserver_1_1_server_a2e5ce6fe7bbef151e80837a0c3209b31}{decrypt\_msg}}(data)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00187}00187\ \ \ \ \ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Decrypted\ message:\ '}\ +\ received\_text)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00188}00188\ \ \ \ \ \ \ \ \ \ \ \ \ print(received\_text)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00189}00189\ \ \ \ \ \ \ \ \ \ \ \ \ conn.sendall(self.\doxymbox{\hyperlink{classserver_1_1_server_ae6c32791bf2a9d812a166a8864de0587}{encrypted\_msg}}(\textcolor{stringliteral}{'Server\ has\ received\ your\ message'}.encode(\textcolor{stringliteral}{'utf-\/8'})))}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00190}00190\ \ \ \ \ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Sent\ message\ to\ the\ user:\ Server\ has\ received\ your\ message'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00191}00191\ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00192}00192\ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00193}00193\ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00194}\doxymbox{\hyperlink{classserver_1_1_server_ad1ba1ac9a680988b085536fd78b52d14}{00194}}\ \ \ \ \ \textcolor{keyword}{def\ }\doxymbox{\hyperlink{classserver_1_1_server_ad1ba1ac9a680988b085536fd78b52d14}{generate\_id}}(self):}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00195}00195\ \ \ \ \ \ \ \ \ self.\doxymbox{\hyperlink{classserver_1_1_server_a55437ee1a36e93394b8bf2853445fbe9}{serverID}}\ =\ hashes.Hash(hashes.SHA256())}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00196}00196\ \ \ \ \ \ \ \ \ self.\doxymbox{\hyperlink{classserver_1_1_server_a55437ee1a36e93394b8bf2853445fbe9}{serverID}}.update(\textcolor{stringliteral}{"{}Server1"{}}.encode())}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00197}00197\ \ \ \ \ \ \ \ \ self.\doxymbox{\hyperlink{classserver_1_1_server_a55437ee1a36e93394b8bf2853445fbe9}{serverID}}\ =\ self.\doxymbox{\hyperlink{classserver_1_1_server_a55437ee1a36e93394b8bf2853445fbe9}{serverID}}.finalize()}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00198}00198\ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00199}00199\ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00200}\doxymbox{\hyperlink{classserver_1_1_server_a363c07029ecab3e36a9d27ceef59274b}{00200}}\ \ \ \ \ \textcolor{keyword}{def\ }\doxymbox{\hyperlink{classserver_1_1_server_a363c07029ecab3e36a9d27ceef59274b}{encrypt\_id\_and\_obtain\_x509cert}}(self):}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00201}00201\ \ \ \ \ \ \ \ \ \textcolor{keyword}{global}\ ttp\_socket}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00202}00202\ \ \ \ \ \ \ \ \ ttp\_socket\ =\ socket.socket(socket.AF\_INET,\ socket.SOCK\_STREAM)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00203}00203\ \ \ \ \ \ \ \ \ ttp\_socket.connect((ttp\_host,\ ttp\_port))}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00204}00204\ \ \ \ \ \ \ \ \ ttp\_socket.sendall(b\textcolor{stringliteral}{'server\_login'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00205}00205\ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Logging\ in\ to\ TTP'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00206}00206\ \ \ \ \ \ \ \ \ ttp\_key\_length\ =\ receive\_data(ttp\_socket,\ 4)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00207}00207\ \ \ \ \ \ \ \ \ ttp\_key\_length\ =\ int.from\_bytes(ttp\_key\_length,\ byteorder=\textcolor{stringliteral}{'big'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00208}00208\ \ \ \ \ \ \ \ \ ttp\_key\ =\ b\textcolor{stringliteral}{''}}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00209}00209\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ len(ttp\_key)\ <\ ttp\_key\_length:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00210}00210\ \ \ \ \ \ \ \ \ \ \ \ \ data\ =\ ttp\_socket.recv(ttp\_key\_length\ -\/\ len(ttp\_key))}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00211}00211\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ \textcolor{keywordflow}{not}\ data:\ \textcolor{keywordflow}{break}}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00212}00212\ \ \ \ \ \ \ \ \ \ \ \ \ ttp\_key\ +=\ data}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00213}00213\ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00214}00214\ \ \ \ \ \ \ \ \ ttp\_public\_key\ =\ serialization.load\_pem\_public\_key(ttp\_key)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00215}00215\ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Received\ TTP\ Public\ Key'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00216}00216\ \ \ \ \ \ \ \ \ self.\doxymbox{\hyperlink{classserver_1_1_server_a367dd84bc71e8c7d43f21f39eda1897f}{encryptedID}}\ =\ ttp\_public\_key.encrypt(self.\doxymbox{\hyperlink{classserver_1_1_server_a55437ee1a36e93394b8bf2853445fbe9}{serverID}},}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00217}00217\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()),}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00218}00218\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ algorithm=hashes.SHA256(),}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00219}00219\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ label=\textcolor{keywordtype}{None}))}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00220}00220\ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Encrypted\ my\ generated\ ID\ with\ TTP\ Public\ Key'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00221}00221\ \ \ \ \ \ \ \ \ ttp\_socket.sendall(b\textcolor{stringliteral}{'X509\_REQUEST'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00222}00222\ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Sent\ request\ for\ a\ x509\ certificate'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00223}00223\ \ \ \ \ \ \ \ \ encID\_len\ =\ len(self.\doxymbox{\hyperlink{classserver_1_1_server_a367dd84bc71e8c7d43f21f39eda1897f}{encryptedID}})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00224}00224\ \ \ \ \ \ \ \ \ ttp\_socket.sendall(encID\_len.to\_bytes(4,\ byteorder=\textcolor{stringliteral}{'big'}))}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00225}00225\ \ \ \ \ \ \ \ \ ttp\_socket.sendall(self.\doxymbox{\hyperlink{classserver_1_1_server_a367dd84bc71e8c7d43f21f39eda1897f}{encryptedID}})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00226}00226\ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Sent\ my\ encrypted\ ID'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00227}00227\ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00228}00228\ \ \ \ \ \ \ \ \ public\_pem\ =\ self.\doxymbox{\hyperlink{classserver_1_1_server_a92a2bd0cafb1140caa6cd263c521b457}{public\_key}}.public\_bytes(encoding=serialization.Encoding.PEM,}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00229}00229\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ format=serialization.PublicFormat.SubjectPublicKeyInfo)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00230}00230\ \ \ \ \ \ \ \ \ ttp\_socket.sendall(len(public\_pem).to\_bytes(4,\ byteorder=\textcolor{stringliteral}{'big'}))}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00231}00231\ \ \ \ \ \ \ \ \ ttp\_socket.sendall(public\_pem)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00232}00232\ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Sent\ my\ Public\ Key'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00233}00233\ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00234}00234\ \ \ \ \ \ \ \ \ raw\_cert\_len\ =\ receive\_data(ttp\_socket,\ 4)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00235}00235\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ raw\_cert\_len:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00236}00236\ \ \ \ \ \ \ \ \ \ \ \ \ cert\_len\ =\ int.from\_bytes(raw\_cert\_len,\ byteorder=\textcolor{stringliteral}{'big'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00237}00237\ \ \ \ \ \ \ \ \ \ \ \ \ cert\_pem\ =\ receive\_data(ttp\_socket,\ cert\_len)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00238}00238\ \ \ \ \ \ \ \ \ \ \ \ \ self.\doxymbox{\hyperlink{classserver_1_1_server_a116ef2a99a6fed0c2500db2c646ed84a}{x509cert}}\ =\ x509.load\_pem\_x509\_certificate(cert\_pem)}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00239}00239\ \ \ \ \ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Obtained\ x509\ certificate'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00240}00240\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00241}00241\ \ \ \ \ \ \ \ \ \ \ \ \ logger.error(\textcolor{stringliteral}{'\ \ OBTAINING\ X509\ CERTIFICATE\ FAILED'})}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00242}00242\ \ \ \ \ \ \ \ \ ttp\_socket.close()}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00243}00243\ \ \ \ \ \ \ \ \ ttp\_socket\ =\ \textcolor{keywordtype}{None}}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00244}00244\ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00245}00245\ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00246}00246\ }
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00247}00247\ \textcolor{keywordflow}{if}\ \_\_name\_\_\ ==\ \textcolor{stringliteral}{'\_\_main\_\_'}:}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00248}00248\ \ \ \ \ server\ =\ \doxymbox{\hyperlink{classserver_1_1_server}{Server}}()}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00249}00249\ \ \ \ \ server.generate\_id()}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00250}00250\ \ \ \ \ server.encrypt\_id\_and\_obtain\_x509cert()}
+\DoxyCodeLine{\Hypertarget{server_8py_source_l00251}00251\ \ \ \ \ server.start()}
+
+\end{DoxyCode}

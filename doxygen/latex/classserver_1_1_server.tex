@@ -1,0 +1,259 @@
+\doxysection{server.\+Server Class Reference}
+\hypertarget{classserver_1_1_server}{}\label{classserver_1_1_server}\index{server.Server@{server.Server}}
+
+
+class of the server, used to communicate with the user and ttp  
+
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\doxymbox{\hyperlink{classserver_1_1_server_ab327c6453df454a2dce379bbb043dc94}{\+\_\+\+\_\+init\+\_\+\+\_\+}} (self)
+\item 
+\doxymbox{\hyperlink{classserver_1_1_server_a7712b83449d5e1ec1f2bb5c213e96e33}{start}} (self)
+\begin{DoxyCompactList}\small\item\em function that allows the server to run continuously, listening on the set-\/up port, waiting for messages \end{DoxyCompactList}\item 
+\doxymbox{\hyperlink{classserver_1_1_server_ae6c32791bf2a9d812a166a8864de0587}{encrypted\+\_\+msg}} (self, message)
+\begin{DoxyCompactList}\small\item\em function used to encrypt a message, that server wants to send to the user using an AES algorithm \end{DoxyCompactList}\item 
+\doxymbox{\hyperlink{classserver_1_1_server_a2e5ce6fe7bbef151e80837a0c3209b31}{decrypt\+\_\+msg}} (self, data)
+\begin{DoxyCompactList}\small\item\em function used to decrypt a message, received from the user \end{DoxyCompactList}\item 
+\doxymbox{\hyperlink{classserver_1_1_server_aa6a3cf346a1c531e536ecdb825f7fa13}{handle\+\_\+client}} (self, data, conn)
+\begin{DoxyCompactList}\small\item\em function responsible for handling the entire process of authenticating both server and user using ttp, or managing the messages received from the user \end{DoxyCompactList}\item 
+\doxymbox{\hyperlink{classserver_1_1_server_ad1ba1ac9a680988b085536fd78b52d14}{generate\+\_\+id}} (self)
+\begin{DoxyCompactList}\small\item\em function to generate server\textquotesingle{}s ID using SHA256 algorithm \end{DoxyCompactList}\item 
+\doxymbox{\hyperlink{classserver_1_1_server_a363c07029ecab3e36a9d27ceef59274b}{encrypt\+\_\+id\+\_\+and\+\_\+obtain\+\_\+x509cert}} (self)
+\begin{DoxyCompactList}\small\item\em function used to encrypt self-\/generated id with ttp\textquotesingle{}s public key and obtaining x509 certificate signed by the ttp \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+str \doxymbox{\hyperlink{classserver_1_1_server_af1e95c1b023e29d688979528c8260d07}{host}} = "{}0.\+0.\+0.\+0"{}
+\item 
+int \doxymbox{\hyperlink{classserver_1_1_server_a71fa8c5fb354f17babb1263f549cba1a}{port}} = 8887
+\item 
+\doxymbox{\hyperlink{classserver_1_1_server_a2745dbdf1c35f7a05ae9d3f8081567d9}{private\+\_\+key}} = rsa.\+generate\+\_\+private\+\_\+key(public\+\_\+exponent=65537, key\+\_\+size=4096)
+\item 
+\doxymbox{\hyperlink{classserver_1_1_server_a92a2bd0cafb1140caa6cd263c521b457}{public\+\_\+key}} = self.\+private\+\_\+key.\+public\+\_\+key()
+\item 
+\doxymbox{\hyperlink{classserver_1_1_server_a8f978e49a33b6aae97eecc563838d59a}{session\+\_\+key}} = None
+\item 
+\doxymbox{\hyperlink{classserver_1_1_server_a55437ee1a36e93394b8bf2853445fbe9}{server\+ID}} = None
+\item 
+\doxymbox{\hyperlink{classserver_1_1_server_a367dd84bc71e8c7d43f21f39eda1897f}{encrypted\+ID}} = None
+\item 
+\doxymbox{\hyperlink{classserver_1_1_server_a116ef2a99a6fed0c2500db2c646ed84a}{x509cert}} = None
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+class of the server, used to communicate with the user and ttp 
+
+Definition at line \doxymbox{\hyperlink{server_8py_source_l00037}{37}} of file \doxymbox{\hyperlink{server_8py_source}{server.\+py}}.
+
+
+
+\label{classserver_1_1_server_doc-constructors}
+\Hypertarget{classserver_1_1_server_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{classserver_1_1_server_ab327c6453df454a2dce379bbb043dc94}\index{server.Server@{server.Server}!\_\_init\_\_@{\_\_init\_\_}}
+\index{\_\_init\_\_@{\_\_init\_\_}!server.Server@{server.Server}}
+\doxysubsubsection{\texorpdfstring{\_\_init\_\_()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily \label{classserver_1_1_server_ab327c6453df454a2dce379bbb043dc94} 
+server.\+Server.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \doxymbox{\hyperlink{server_8py_source_l00038}{38}} of file \doxymbox{\hyperlink{server_8py_source}{server.\+py}}.
+
+
+
+\label{classserver_1_1_server_doc-func-members}
+\Hypertarget{classserver_1_1_server_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classserver_1_1_server_a2e5ce6fe7bbef151e80837a0c3209b31}\index{server.Server@{server.Server}!decrypt\_msg@{decrypt\_msg}}
+\index{decrypt\_msg@{decrypt\_msg}!server.Server@{server.Server}}
+\doxysubsubsection{\texorpdfstring{decrypt\_msg()}{decrypt\_msg()}}
+{\footnotesize\ttfamily \label{classserver_1_1_server_a2e5ce6fe7bbef151e80837a0c3209b31} 
+server.\+Server.\+decrypt\+\_\+msg (\begin{DoxyParamCaption}\item[{}]{self}{, }\item[{}]{data}{}\end{DoxyParamCaption})}
+
+
+
+function used to decrypt a message, received from the user 
+
+
+\begin{DoxyParams}{Parameters}
+{\em data} & encrypted message from the user \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \doxymbox{\hyperlink{server_8py_source_l00081}{81}} of file \doxymbox{\hyperlink{server_8py_source}{server.\+py}}.
+
+\Hypertarget{classserver_1_1_server_a363c07029ecab3e36a9d27ceef59274b}\index{server.Server@{server.Server}!encrypt\_id\_and\_obtain\_x509cert@{encrypt\_id\_and\_obtain\_x509cert}}
+\index{encrypt\_id\_and\_obtain\_x509cert@{encrypt\_id\_and\_obtain\_x509cert}!server.Server@{server.Server}}
+\doxysubsubsection{\texorpdfstring{encrypt\_id\_and\_obtain\_x509cert()}{encrypt\_id\_and\_obtain\_x509cert()}}
+{\footnotesize\ttfamily \label{classserver_1_1_server_a363c07029ecab3e36a9d27ceef59274b} 
+server.\+Server.\+encrypt\+\_\+id\+\_\+and\+\_\+obtain\+\_\+x509cert (\begin{DoxyParamCaption}\item[{}]{self}{}\end{DoxyParamCaption})}
+
+
+
+function used to encrypt self-\/generated id with ttp\textquotesingle{}s public key and obtaining x509 certificate signed by the ttp 
+
+
+
+Definition at line \doxymbox{\hyperlink{server_8py_source_l00200}{200}} of file \doxymbox{\hyperlink{server_8py_source}{server.\+py}}.
+
+\Hypertarget{classserver_1_1_server_ae6c32791bf2a9d812a166a8864de0587}\index{server.Server@{server.Server}!encrypted\_msg@{encrypted\_msg}}
+\index{encrypted\_msg@{encrypted\_msg}!server.Server@{server.Server}}
+\doxysubsubsection{\texorpdfstring{encrypted\_msg()}{encrypted\_msg()}}
+{\footnotesize\ttfamily \label{classserver_1_1_server_ae6c32791bf2a9d812a166a8864de0587} 
+server.\+Server.\+encrypted\+\_\+msg (\begin{DoxyParamCaption}\item[{}]{self}{, }\item[{}]{message}{}\end{DoxyParamCaption})}
+
+
+
+function used to encrypt a message, that server wants to send to the user using an AES algorithm 
+
+
+\begin{DoxyParams}{Parameters}
+{\em message} & content of the message encoded in utf-\/8 \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \doxymbox{\hyperlink{server_8py_source_l00070}{70}} of file \doxymbox{\hyperlink{server_8py_source}{server.\+py}}.
+
+\Hypertarget{classserver_1_1_server_ad1ba1ac9a680988b085536fd78b52d14}\index{server.Server@{server.Server}!generate\_id@{generate\_id}}
+\index{generate\_id@{generate\_id}!server.Server@{server.Server}}
+\doxysubsubsection{\texorpdfstring{generate\_id()}{generate\_id()}}
+{\footnotesize\ttfamily \label{classserver_1_1_server_ad1ba1ac9a680988b085536fd78b52d14} 
+server.\+Server.\+generate\+\_\+id (\begin{DoxyParamCaption}\item[{}]{self}{}\end{DoxyParamCaption})}
+
+
+
+function to generate server\textquotesingle{}s ID using SHA256 algorithm 
+
+
+
+Definition at line \doxymbox{\hyperlink{server_8py_source_l00194}{194}} of file \doxymbox{\hyperlink{server_8py_source}{server.\+py}}.
+
+\Hypertarget{classserver_1_1_server_aa6a3cf346a1c531e536ecdb825f7fa13}\index{server.Server@{server.Server}!handle\_client@{handle\_client}}
+\index{handle\_client@{handle\_client}!server.Server@{server.Server}}
+\doxysubsubsection{\texorpdfstring{handle\_client()}{handle\_client()}}
+{\footnotesize\ttfamily \label{classserver_1_1_server_aa6a3cf346a1c531e536ecdb825f7fa13} 
+server.\+Server.\+handle\+\_\+client (\begin{DoxyParamCaption}\item[{}]{self}{, }\item[{}]{data}{, }\item[{}]{conn}{}\end{DoxyParamCaption})}
+
+
+
+function responsible for handling the entire process of authenticating both server and user using ttp, or managing the messages received from the user 
+
+
+\begin{DoxyParams}{Parameters}
+{\em data} & message (request) from the user @conn connection with the user \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \doxymbox{\hyperlink{server_8py_source_l00098}{98}} of file \doxymbox{\hyperlink{server_8py_source}{server.\+py}}.
+
+\Hypertarget{classserver_1_1_server_a7712b83449d5e1ec1f2bb5c213e96e33}\index{server.Server@{server.Server}!start@{start}}
+\index{start@{start}!server.Server@{server.Server}}
+\doxysubsubsection{\texorpdfstring{start()}{start()}}
+{\footnotesize\ttfamily \label{classserver_1_1_server_a7712b83449d5e1ec1f2bb5c213e96e33} 
+server.\+Server.\+start (\begin{DoxyParamCaption}\item[{}]{self}{}\end{DoxyParamCaption})}
+
+
+
+function that allows the server to run continuously, listening on the set-\/up port, waiting for messages 
+
+
+
+Definition at line \doxymbox{\hyperlink{server_8py_source_l00049}{49}} of file \doxymbox{\hyperlink{server_8py_source}{server.\+py}}.
+
+
+
+\label{classserver_1_1_server_doc-variable-members}
+\Hypertarget{classserver_1_1_server_doc-variable-members}
+\doxysubsection{Member Data Documentation}
+\Hypertarget{classserver_1_1_server_a367dd84bc71e8c7d43f21f39eda1897f}\index{server.Server@{server.Server}!encryptedID@{encryptedID}}
+\index{encryptedID@{encryptedID}!server.Server@{server.Server}}
+\doxysubsubsection{\texorpdfstring{encryptedID}{encryptedID}}
+{\footnotesize\ttfamily \label{classserver_1_1_server_a367dd84bc71e8c7d43f21f39eda1897f} 
+server.\+Server.\+encrypted\+ID = None}
+
+
+
+Definition at line \doxymbox{\hyperlink{server_8py_source_l00045}{45}} of file \doxymbox{\hyperlink{server_8py_source}{server.\+py}}.
+
+\Hypertarget{classserver_1_1_server_af1e95c1b023e29d688979528c8260d07}\index{server.Server@{server.Server}!host@{host}}
+\index{host@{host}!server.Server@{server.Server}}
+\doxysubsubsection{\texorpdfstring{host}{host}}
+{\footnotesize\ttfamily \label{classserver_1_1_server_af1e95c1b023e29d688979528c8260d07} 
+server.\+Server.\+host = "{}0.\+0.\+0.\+0"{}}
+
+
+
+Definition at line \doxymbox{\hyperlink{server_8py_source_l00039}{39}} of file \doxymbox{\hyperlink{server_8py_source}{server.\+py}}.
+
+\Hypertarget{classserver_1_1_server_a71fa8c5fb354f17babb1263f549cba1a}\index{server.Server@{server.Server}!port@{port}}
+\index{port@{port}!server.Server@{server.Server}}
+\doxysubsubsection{\texorpdfstring{port}{port}}
+{\footnotesize\ttfamily \label{classserver_1_1_server_a71fa8c5fb354f17babb1263f549cba1a} 
+server.\+Server.\+port = 8887}
+
+
+
+Definition at line \doxymbox{\hyperlink{server_8py_source_l00040}{40}} of file \doxymbox{\hyperlink{server_8py_source}{server.\+py}}.
+
+\Hypertarget{classserver_1_1_server_a2745dbdf1c35f7a05ae9d3f8081567d9}\index{server.Server@{server.Server}!private\_key@{private\_key}}
+\index{private\_key@{private\_key}!server.Server@{server.Server}}
+\doxysubsubsection{\texorpdfstring{private\_key}{private\_key}}
+{\footnotesize\ttfamily \label{classserver_1_1_server_a2745dbdf1c35f7a05ae9d3f8081567d9} 
+server.\+Server.\+private\+\_\+key = rsa.\+generate\+\_\+private\+\_\+key(public\+\_\+exponent=65537, key\+\_\+size=4096)}
+
+
+
+Definition at line \doxymbox{\hyperlink{server_8py_source_l00041}{41}} of file \doxymbox{\hyperlink{server_8py_source}{server.\+py}}.
+
+\Hypertarget{classserver_1_1_server_a92a2bd0cafb1140caa6cd263c521b457}\index{server.Server@{server.Server}!public\_key@{public\_key}}
+\index{public\_key@{public\_key}!server.Server@{server.Server}}
+\doxysubsubsection{\texorpdfstring{public\_key}{public\_key}}
+{\footnotesize\ttfamily \label{classserver_1_1_server_a92a2bd0cafb1140caa6cd263c521b457} 
+server.\+Server.\+public\+\_\+key = self.\+private\+\_\+key.\+public\+\_\+key()}
+
+
+
+Definition at line \doxymbox{\hyperlink{server_8py_source_l00042}{42}} of file \doxymbox{\hyperlink{server_8py_source}{server.\+py}}.
+
+\Hypertarget{classserver_1_1_server_a55437ee1a36e93394b8bf2853445fbe9}\index{server.Server@{server.Server}!serverID@{serverID}}
+\index{serverID@{serverID}!server.Server@{server.Server}}
+\doxysubsubsection{\texorpdfstring{serverID}{serverID}}
+{\footnotesize\ttfamily \label{classserver_1_1_server_a55437ee1a36e93394b8bf2853445fbe9} 
+server.\+Server.\+server\+ID = None}
+
+
+
+Definition at line \doxymbox{\hyperlink{server_8py_source_l00044}{44}} of file \doxymbox{\hyperlink{server_8py_source}{server.\+py}}.
+
+\Hypertarget{classserver_1_1_server_a8f978e49a33b6aae97eecc563838d59a}\index{server.Server@{server.Server}!session\_key@{session\_key}}
+\index{session\_key@{session\_key}!server.Server@{server.Server}}
+\doxysubsubsection{\texorpdfstring{session\_key}{session\_key}}
+{\footnotesize\ttfamily \label{classserver_1_1_server_a8f978e49a33b6aae97eecc563838d59a} 
+server.\+Server.\+session\+\_\+key = None}
+
+
+
+Definition at line \doxymbox{\hyperlink{server_8py_source_l00043}{43}} of file \doxymbox{\hyperlink{server_8py_source}{server.\+py}}.
+
+\Hypertarget{classserver_1_1_server_a116ef2a99a6fed0c2500db2c646ed84a}\index{server.Server@{server.Server}!x509cert@{x509cert}}
+\index{x509cert@{x509cert}!server.Server@{server.Server}}
+\doxysubsubsection{\texorpdfstring{x509cert}{x509cert}}
+{\footnotesize\ttfamily \label{classserver_1_1_server_a116ef2a99a6fed0c2500db2c646ed84a} 
+server.\+Server.\+x509cert = None}
+
+
+
+Definition at line \doxymbox{\hyperlink{server_8py_source_l00046}{46}} of file \doxymbox{\hyperlink{server_8py_source}{server.\+py}}.
+
+
+
+The documentation for this class was generated from the following file:\+\begin{DoxyCompactItemize}
+\item 
+server.\+py\end{DoxyCompactItemize}
