@@ -62,7 +62,7 @@ class TTP:
                         pub_len = len(public_pem)
                         conn.sendall(pub_len.to_bytes(4, byteorder='big'))
                         conn.sendall(public_pem)
-                        logger.info('   Sent my Public Key')
+                        logger.info('   TTP has sent its Public Key')
                     elif data.startswith(b'AUTH_REQUEST'):
                         logger.info('   Received authentication request. Authenticating the server')
                         session_key = secrets.token_bytes(32)

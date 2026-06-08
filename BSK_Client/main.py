@@ -100,7 +100,7 @@ class Client:
         ttp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         ttp_socket.connect((ttp_host, ttp_port))
         ttp_socket.sendall(b'client_login')
-        logger.info('   Logged in to TTP')
+        logger.info('   User has logged in to TTP')
         ttp_key_length = receive_data(ttp_socket, 4)
         ttp_key_length = int.from_bytes(ttp_key_length, byteorder='big')
         ttp_key = b''
@@ -110,7 +110,7 @@ class Client:
             ttp_key += data
 
         ttp_public_key = serialization.load_pem_public_key(ttp_key)
-        logger.info('   Received TTP Public Key')
+        logger.info('   User has received TTP Public Key')
         ## encrypting the ID with ttp's public key
         self.encryptedID = ttp_public_key.encrypt(self.clientID,
                                                   padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()),
@@ -121,20 +121,20 @@ class Client:
         encID_len = len(self.encryptedID)
         ttp_socket.sendall(encID_len.to_bytes(4, byteorder='big'))
         ttp_socket.sendall(self.encryptedID)
-        logger.info('   Sent my encrypted ID to TTP')
+        logger.info('   User has sent their encrypted ID to TTP')
 
         public_pem = self.public_key.public_bytes(encoding=serialization.Encoding.PEM,
                                                   format=serialization.PublicFormat.SubjectPublicKeyInfo)
         ttp_socket.sendall(len(public_pem).to_bytes(4, byteorder='big'))
         ttp_socket.sendall(public_pem)
-        logger.info('   Sent my Public Key to TTP')
+        logger.info('   User has sent their Public Key to TTP')
 
         raw_cert_len = receive_data(ttp_socket, 4)
         if raw_cert_len:
             cert_len = int.from_bytes(raw_cert_len, byteorder='big')
             cert_pem = receive_data(ttp_socket, cert_len)
             self.x509cert = x509.load_pem_x509_certificate(cert_pem)
-            logger.info('   Obtained x509 certificate')
+            logger.info('   User has obtained x509 certificate')
         ttp_socket.close()
         ttp_socket = None
         logged_in_ttp = True
@@ -163,7 +163,7 @@ def gui(client: Client):
                 logged_in_ttp = True
             ## begin authentication of both user and server
             server_socket.sendall(b'AUTH_REQUEST')
-            logger.info('   Sent authentication request')
+            logger.info('   User has sent authentication request')
             response = receive_data(server_socket, 7)
             if response == b'AUTH_OK':
                 logger.info('   Server has been correctly authenticated')
@@ -205,7 +205,7 @@ def gui(client: Client):
                                                                         padding.OAEP(mgf=padding.MGF1(hashes.SHA256()),
                                                                                      algorithm=hashes.SHA256(),
                                                                                      label=None))
-                        logger.info('   Obtained session key')
+                        logger.info('   User has obtained session key')
                         auth_valid = True
                     else:
                         logger.error('   USER AUTHENTICATION FAILED')
