@@ -65,7 +65,7 @@
 \DoxyCodeLine{\Hypertarget{ttp_8py_source_l00062}00062\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pub\_len\ =\ len(public\_pem)}
 \DoxyCodeLine{\Hypertarget{ttp_8py_source_l00063}00063\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ conn.sendall(pub\_len.to\_bytes(4,\ byteorder=\textcolor{stringliteral}{'big'}))}
 \DoxyCodeLine{\Hypertarget{ttp_8py_source_l00064}00064\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ conn.sendall(public\_pem)}
-\DoxyCodeLine{\Hypertarget{ttp_8py_source_l00065}00065\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Sent\ my\ Public\ Key'})}
+\DoxyCodeLine{\Hypertarget{ttp_8py_source_l00065}00065\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ TTP\ has\ sent\ its\ Public\ Key'})}
 \DoxyCodeLine{\Hypertarget{ttp_8py_source_l00066}00066\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{elif}\ data.startswith(b\textcolor{stringliteral}{'AUTH\_REQUEST'}):}
 \DoxyCodeLine{\Hypertarget{ttp_8py_source_l00067}00067\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ logger.info(\textcolor{stringliteral}{'\ \ \ Received\ authentication\ request.\ Authenticating\ the\ server'})}
 \DoxyCodeLine{\Hypertarget{ttp_8py_source_l00068}00068\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ session\_key\ =\ secrets.token\_bytes(32)}

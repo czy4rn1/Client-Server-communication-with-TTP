@@ -30,7 +30,7 @@ mermaid.initialize({ startOnLoad: true, theme: theme });
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Client-Server communication with TTP<span id="projectnumber">&#160;1.2.2</span>
+   <div id="projectname">Client-Server communication with TTP<span id="projectnumber">&#160;1.2.3</span>
    </div>
    <div id="projectbrief">Set of applications emulating secure communication between user and server using trusted third party</div>
   </td>
@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded',() => { initNavTree('ttp_8py_source
 <div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>                        pub_len = len(public_pem)</div>
 <div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>                        conn.sendall(pub_len.to_bytes(4, byteorder=<span class="stringliteral">&#39;big&#39;</span>))</div>
 <div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>                        conn.sendall(public_pem)</div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>                        logger.info(<span class="stringliteral">&#39;   Sent my Public Key&#39;</span>)</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>                        logger.info(<span class="stringliteral">&#39;   TTP has sent its Public Key&#39;</span>)</div>
 <div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>                    <span class="keywordflow">elif</span> data.startswith(b<span class="stringliteral">&#39;AUTH_REQUEST&#39;</span>):</div>
 <div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>                        logger.info(<span class="stringliteral">&#39;   Received authentication request. Authenticating the server&#39;</span>)</div>
 <div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>                        session_key = secrets.token_bytes(32)</div>
