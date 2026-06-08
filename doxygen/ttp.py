@@ -32,6 +32,7 @@ def receive_data(conn, n):
         data += packet
     return data
 
+
 ## class of the ttp, used to communicate with the user and server, creating x509 certificates
 class TTP:
     def __init__(self):
@@ -84,6 +85,23 @@ class TTP:
                             try:
                                 self.public_key.verify(x509cert.signature, x509cert.tbs_certificate_bytes,
                                                        padding.PKCS1v15(), x509cert.signature_hash_algorithm)
+                                encID_bytes = self.private_key.decrypt(encID, padding.OAEP(
+                                    mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                                    algorithm=hashes.SHA256(),
+                                    label=None
+                                ))
+                                server_id_hex = encID_bytes.hex()
+                                cert_subject_id_attr = x509cert.subject.get_attributes_for_oid(x509.oid.NameOID.COMMON_NAME)
+                                if not cert_subject_id_attr:
+                                    logger.error('  SERVER AUTHENTICATION FAILED')
+                                    conn.sendall(b'--ERROR')
+                                    continue
+                                id_from_cert = cert_subject_id_attr[0].value
+                                if server_id_hex != id_from_cert:
+                                    logger.error('  SERVER AUTHENTICATION FAILED')
+                                    conn.sendall(b'--ERROR')
+                                    continue
+
                                 conn.sendall(b'AUTH_OK')
                                 logger.info('   Server has been correctly authenticated')
                                 conn.sendall(b'USER_AUTH')
@@ -111,6 +129,24 @@ class TTP:
                                                                    user_x509cert.tbs_certificate_bytes,
                                                                    padding.PKCS1v15(),
                                                                    user_x509cert.signature_hash_algorithm)
+                                            user_encID_bytes = self.private_key.decrypt(user_encID, padding.OAEP(
+                                                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                                                algorithm=hashes.SHA256(),
+                                                label=None
+                                            ))
+                                            user_id_hex = user_encID_bytes.hex()
+                                            user_cert_subject_attr = user_x509cert.subject.get_attributes_for_oid(
+                                                x509.oid.NameOID.COMMON_NAME)
+                                            if not user_cert_subject_attr:
+                                                logger.error('  USER AUTHENTICATION FAILED')
+                                                conn.sendall(b'-------ERROR')
+                                                continue
+                                            user_id_from_cert = user_cert_subject_attr[0].value
+                                            if user_id_hex != user_id_from_cert:
+                                                logger.error('  USER AUTHENTICATION FAILED')
+                                                conn.sendall(b'-------ERROR')
+                                                continue
+
                                             server_enc_ses_key = x509cert.public_key(). \
                                                 encrypt(session_key,
                                                         padding.OAEP(mgf=padding.MGF1(hashes.SHA256()),
@@ -155,7 +191,7 @@ class TTP:
                         self.handle(conn)
                     else:
                         logger.error('  UNEXPECTED MESSAGE')
-                        
+
     ## function used to handle x509 requests from server and user
     # @param conn connection with server or user
     def handle(self, conn):
