@@ -1,0 +1,202 @@
+\doxysection{client.\+Client Class Reference}
+\hypertarget{classclient_1_1_client}{}\label{classclient_1_1_client}\index{client.Client@{client.Client}}
+
+
+class of the user, used to communicate with the server and ttp  
+
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\doxymbox{\hyperlink{classclient_1_1_client_a8c948c50f2b75dca46e517a2a35e8cbe}{\+\_\+\+\_\+init\+\_\+\+\_\+}} (self)
+\item 
+\doxymbox{\hyperlink{classclient_1_1_client_a5053843e7d0d542eb031c183bf6429d4}{generate\+\_\+id}} (self)
+\begin{DoxyCompactList}\small\item\em function to generate user\textquotesingle{}s ID using SHA256 algorithm \end{DoxyCompactList}\item 
+\doxymbox{\hyperlink{classclient_1_1_client_aa4fd5a2e13641028333e43156eef6b9d}{encrypted\+\_\+msg}} (self, message)
+\begin{DoxyCompactList}\small\item\em function used to encrypt a message, that user wants to send to the server using an AES algorithm \end{DoxyCompactList}\item 
+\doxymbox{\hyperlink{classclient_1_1_client_a54c73b76b18d5612fb11dc345eb7093f}{decrypt\+\_\+msg}} (self, data)
+\begin{DoxyCompactList}\small\item\em function used to decrypt a message, received from the server \end{DoxyCompactList}\item 
+\doxymbox{\hyperlink{classclient_1_1_client_ad4764e821071a19c1bdde4aa8bd6a25f}{encrypt\+\_\+id\+\_\+and\+\_\+obtain\+\_\+x509cert}} (self)
+\begin{DoxyCompactList}\small\item\em function used to encrypt self-\/generated id with ttp\textquotesingle{}s public key and obtaining x509 certificate signed by the ttp \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\doxymbox{\hyperlink{classclient_1_1_client_a22174d78fdb5ac92ddc4f985decd3fd0}{private\+\_\+key}} = rsa.\+generate\+\_\+private\+\_\+key(public\+\_\+exponent=65537, key\+\_\+size=4096)
+\item 
+\doxymbox{\hyperlink{classclient_1_1_client_aee61e1afa7850ca5d263c1461af09c4f}{public\+\_\+key}} = self.\+private\+\_\+key.\+public\+\_\+key()
+\item 
+\doxymbox{\hyperlink{classclient_1_1_client_a304f944364a231da756d2395bf291559}{client\+ID}} = None
+\item 
+\doxymbox{\hyperlink{classclient_1_1_client_a03d0087c7b20bad81ba2d22ed3331fce}{encrypted\+ID}} = None
+\begin{DoxyCompactList}\small\item\em encrypting the ID with ttp\textquotesingle{}s public key \end{DoxyCompactList}\item 
+\doxymbox{\hyperlink{classclient_1_1_client_a2b66fde97149b9a3b70e23b2c683a617}{session\+\_\+key}} = None
+\item 
+\doxymbox{\hyperlink{classclient_1_1_client_aca0b45de3fae9ad8bf2690a79ed10fcb}{x509cert}} = None
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+class of the user, used to communicate with the server and ttp 
+
+Definition at line \doxymbox{\hyperlink{client_8py_source_l00055}{55}} of file \doxymbox{\hyperlink{client_8py_source}{client.\+py}}.
+
+
+
+\label{classclient_1_1_client_doc-constructors}
+\Hypertarget{classclient_1_1_client_doc-constructors}
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{classclient_1_1_client_a8c948c50f2b75dca46e517a2a35e8cbe}\index{client.Client@{client.Client}!\_\_init\_\_@{\_\_init\_\_}}
+\index{\_\_init\_\_@{\_\_init\_\_}!client.Client@{client.Client}}
+\doxysubsubsection{\texorpdfstring{\_\_init\_\_()}{\_\_init\_\_()}}
+{\footnotesize\ttfamily \label{classclient_1_1_client_a8c948c50f2b75dca46e517a2a35e8cbe} 
+client.\+Client.\+\_\+\+\_\+init\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{}]{self}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \doxymbox{\hyperlink{client_8py_source_l00056}{56}} of file \doxymbox{\hyperlink{client_8py_source}{client.\+py}}.
+
+
+
+\label{classclient_1_1_client_doc-func-members}
+\Hypertarget{classclient_1_1_client_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classclient_1_1_client_a54c73b76b18d5612fb11dc345eb7093f}\index{client.Client@{client.Client}!decrypt\_msg@{decrypt\_msg}}
+\index{decrypt\_msg@{decrypt\_msg}!client.Client@{client.Client}}
+\doxysubsubsection{\texorpdfstring{decrypt\_msg()}{decrypt\_msg()}}
+{\footnotesize\ttfamily \label{classclient_1_1_client_a54c73b76b18d5612fb11dc345eb7093f} 
+client.\+Client.\+decrypt\+\_\+msg (\begin{DoxyParamCaption}\item[{}]{self}{, }\item[{}]{data}{}\end{DoxyParamCaption})}
+
+
+
+function used to decrypt a message, received from the server 
+
+
+\begin{DoxyParams}{Parameters}
+{\em data} & encrypted message from the server \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \doxymbox{\hyperlink{client_8py_source_l00084}{84}} of file \doxymbox{\hyperlink{client_8py_source}{client.\+py}}.
+
+\Hypertarget{classclient_1_1_client_ad4764e821071a19c1bdde4aa8bd6a25f}\index{client.Client@{client.Client}!encrypt\_id\_and\_obtain\_x509cert@{encrypt\_id\_and\_obtain\_x509cert}}
+\index{encrypt\_id\_and\_obtain\_x509cert@{encrypt\_id\_and\_obtain\_x509cert}!client.Client@{client.Client}}
+\doxysubsubsection{\texorpdfstring{encrypt\_id\_and\_obtain\_x509cert()}{encrypt\_id\_and\_obtain\_x509cert()}}
+{\footnotesize\ttfamily \label{classclient_1_1_client_ad4764e821071a19c1bdde4aa8bd6a25f} 
+client.\+Client.\+encrypt\+\_\+id\+\_\+and\+\_\+obtain\+\_\+x509cert (\begin{DoxyParamCaption}\item[{}]{self}{}\end{DoxyParamCaption})}
+
+
+
+function used to encrypt self-\/generated id with ttp\textquotesingle{}s public key and obtaining x509 certificate signed by the ttp 
+
+
+
+Definition at line \doxymbox{\hyperlink{client_8py_source_l00098}{98}} of file \doxymbox{\hyperlink{client_8py_source}{client.\+py}}.
+
+\Hypertarget{classclient_1_1_client_aa4fd5a2e13641028333e43156eef6b9d}\index{client.Client@{client.Client}!encrypted\_msg@{encrypted\_msg}}
+\index{encrypted\_msg@{encrypted\_msg}!client.Client@{client.Client}}
+\doxysubsubsection{\texorpdfstring{encrypted\_msg()}{encrypted\_msg()}}
+{\footnotesize\ttfamily \label{classclient_1_1_client_aa4fd5a2e13641028333e43156eef6b9d} 
+client.\+Client.\+encrypted\+\_\+msg (\begin{DoxyParamCaption}\item[{}]{self}{, }\item[{}]{message}{}\end{DoxyParamCaption})}
+
+
+
+function used to encrypt a message, that user wants to send to the server using an AES algorithm 
+
+
+\begin{DoxyParams}{Parameters}
+{\em message} & content of the message encoded in utf-\/8 \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \doxymbox{\hyperlink{client_8py_source_l00072}{72}} of file \doxymbox{\hyperlink{client_8py_source}{client.\+py}}.
+
+\Hypertarget{classclient_1_1_client_a5053843e7d0d542eb031c183bf6429d4}\index{client.Client@{client.Client}!generate\_id@{generate\_id}}
+\index{generate\_id@{generate\_id}!client.Client@{client.Client}}
+\doxysubsubsection{\texorpdfstring{generate\_id()}{generate\_id()}}
+{\footnotesize\ttfamily \label{classclient_1_1_client_a5053843e7d0d542eb031c183bf6429d4} 
+client.\+Client.\+generate\+\_\+id (\begin{DoxyParamCaption}\item[{}]{self}{}\end{DoxyParamCaption})}
+
+
+
+function to generate user\textquotesingle{}s ID using SHA256 algorithm 
+
+
+
+Definition at line \doxymbox{\hyperlink{client_8py_source_l00065}{65}} of file \doxymbox{\hyperlink{client_8py_source}{client.\+py}}.
+
+
+
+\label{classclient_1_1_client_doc-variable-members}
+\Hypertarget{classclient_1_1_client_doc-variable-members}
+\doxysubsection{Member Data Documentation}
+\Hypertarget{classclient_1_1_client_a304f944364a231da756d2395bf291559}\index{client.Client@{client.Client}!clientID@{clientID}}
+\index{clientID@{clientID}!client.Client@{client.Client}}
+\doxysubsubsection{\texorpdfstring{clientID}{clientID}}
+{\footnotesize\ttfamily \label{classclient_1_1_client_a304f944364a231da756d2395bf291559} 
+client.\+Client.\+client\+ID = None}
+
+
+
+Definition at line \doxymbox{\hyperlink{client_8py_source_l00059}{59}} of file \doxymbox{\hyperlink{client_8py_source}{client.\+py}}.
+
+\Hypertarget{classclient_1_1_client_a03d0087c7b20bad81ba2d22ed3331fce}\index{client.Client@{client.Client}!encryptedID@{encryptedID}}
+\index{encryptedID@{encryptedID}!client.Client@{client.Client}}
+\doxysubsubsection{\texorpdfstring{encryptedID}{encryptedID}}
+{\footnotesize\ttfamily \label{classclient_1_1_client_a03d0087c7b20bad81ba2d22ed3331fce} 
+client.\+Client.\+encrypted\+ID = None}
+
+
+
+encrypting the ID with ttp\textquotesingle{}s public key 
+
+
+
+Definition at line \doxymbox{\hyperlink{client_8py_source_l00060}{60}} of file \doxymbox{\hyperlink{client_8py_source}{client.\+py}}.
+
+\Hypertarget{classclient_1_1_client_a22174d78fdb5ac92ddc4f985decd3fd0}\index{client.Client@{client.Client}!private\_key@{private\_key}}
+\index{private\_key@{private\_key}!client.Client@{client.Client}}
+\doxysubsubsection{\texorpdfstring{private\_key}{private\_key}}
+{\footnotesize\ttfamily \label{classclient_1_1_client_a22174d78fdb5ac92ddc4f985decd3fd0} 
+client.\+Client.\+private\+\_\+key = rsa.\+generate\+\_\+private\+\_\+key(public\+\_\+exponent=65537, key\+\_\+size=4096)}
+
+
+
+Definition at line \doxymbox{\hyperlink{client_8py_source_l00057}{57}} of file \doxymbox{\hyperlink{client_8py_source}{client.\+py}}.
+
+\Hypertarget{classclient_1_1_client_aee61e1afa7850ca5d263c1461af09c4f}\index{client.Client@{client.Client}!public\_key@{public\_key}}
+\index{public\_key@{public\_key}!client.Client@{client.Client}}
+\doxysubsubsection{\texorpdfstring{public\_key}{public\_key}}
+{\footnotesize\ttfamily \label{classclient_1_1_client_aee61e1afa7850ca5d263c1461af09c4f} 
+client.\+Client.\+public\+\_\+key = self.\+private\+\_\+key.\+public\+\_\+key()}
+
+
+
+Definition at line \doxymbox{\hyperlink{client_8py_source_l00058}{58}} of file \doxymbox{\hyperlink{client_8py_source}{client.\+py}}.
+
+\Hypertarget{classclient_1_1_client_a2b66fde97149b9a3b70e23b2c683a617}\index{client.Client@{client.Client}!session\_key@{session\_key}}
+\index{session\_key@{session\_key}!client.Client@{client.Client}}
+\doxysubsubsection{\texorpdfstring{session\_key}{session\_key}}
+{\footnotesize\ttfamily \label{classclient_1_1_client_a2b66fde97149b9a3b70e23b2c683a617} 
+client.\+Client.\+session\+\_\+key = None}
+
+
+
+Definition at line \doxymbox{\hyperlink{client_8py_source_l00061}{61}} of file \doxymbox{\hyperlink{client_8py_source}{client.\+py}}.
+
+\Hypertarget{classclient_1_1_client_aca0b45de3fae9ad8bf2690a79ed10fcb}\index{client.Client@{client.Client}!x509cert@{x509cert}}
+\index{x509cert@{x509cert}!client.Client@{client.Client}}
+\doxysubsubsection{\texorpdfstring{x509cert}{x509cert}}
+{\footnotesize\ttfamily \label{classclient_1_1_client_aca0b45de3fae9ad8bf2690a79ed10fcb} 
+client.\+Client.\+x509cert = None}
+
+
+
+Definition at line \doxymbox{\hyperlink{client_8py_source_l00062}{62}} of file \doxymbox{\hyperlink{client_8py_source}{client.\+py}}.
+
+
+
+The documentation for this class was generated from the following file:\+\begin{DoxyCompactItemize}
+\item 
+client.\+py\end{DoxyCompactItemize}
